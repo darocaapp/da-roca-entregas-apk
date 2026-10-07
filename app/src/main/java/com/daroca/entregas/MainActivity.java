@@ -14,13 +14,15 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
     private WebView webView;
+
     private String platform = "ifood";
     private String orderCode = "";
 
     private static final String IFOOD_URL =
             "https://confirmacao-entrega-propria.ifood.com.br/numero-pedido";
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler handler =
+            new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,12 +43,13 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
 
-                if ("ifood".equals(platform) && !orderCode.isEmpty()) {
+                if ("ifood".equals(platform)
+                        && orderCode.length() == 8) {
 
                     Toast.makeText(
                             MainActivity.this,
                             "Código recebido: " + orderCode,
-                            Toast.LENGTH_LONG
+                            Toast.LENGTH_SHORT
                     ).show();
 
                     iniciarTentativas(orderCode);
@@ -62,6 +65,7 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
 
         setIntent(intent);
+
         handleIntent(intent);
     }
 
@@ -72,8 +76,8 @@ public class MainActivity extends Activity {
 
         Uri data = intent.getData();
 
-        if (data != null &&
-                "daroca".equalsIgnoreCase(data.getScheme())) {
+        if (data != null
+                && "daroca".equalsIgnoreCase(data.getScheme())) {
 
             String host = data.getHost();
 
@@ -82,8 +86,10 @@ public class MainActivity extends Activity {
             }
 
             if (!data.getPathSegments().isEmpty()) {
-                orderCode =
-                        digitsOnly(data.getPathSegments().get(0));
+
+                orderCode = digitsOnly(
+                        data.getPathSegments().get(0)
+                );
             }
         }
 
@@ -106,92 +112,146 @@ public class MainActivity extends Activity {
         return value.replaceAll("\\D", "");
     }
 
+    /*
+     * O site do iFood possui 8 campos separados.
+     *
+     * Exemplo:
+     *
+     * order-number-input-0
+     * order-number-input-1
+     * order-number-input-2
+     * ...
+     * order-number-input-7
+     *
+     * Vamos esperar esses campos aparecerem
+     * e colocar um número em cada campo.
+     */
+
     private void iniciarTentativas(final String code) {
 
-        // O site pode criar o campo alguns segundos
-        // depois de onPageFinished.
+        // tenta durante aproximadamente 10 segundos
+
         for (int i = 0; i <= 20; i++) {
 
             final int tentativa = i;
 
             handler.postDelayed(
-                    () -> injectIfoodCode(code, tentativa),
+                    () -> preencherCamposIfood(
+                            code,
+                            tentativa
+                    ),
                     i * 500L
             );
         }
     }
 
-    private void injectIfoodCode(
+    private void preencherCamposIfood(
             String code,
             int tentativa
     ) {
 
-        String safe =
-                code.replace("\\", "")
-                    .replace("'", "");
+        if (code == null || code.length() != 8) {
+            return;
+        }
 
-        String js =
+        String safeCode =
+                code.replace("\\", "")
+                        .replace("'", "");
+
+        String javascript =
+
                 "(function(){" +
 
-                "var code='" + safe + "';" +
+                "var codigo='" + safeCode + "';" +
 
-                "function setValue(el){" +
+                "var campos=document.querySelectorAll(" +
+                "'[data-testid^=\"order-number-input-\"]'" +
+                ");" +
+
+                "if(campos.length < 8){" +
+                "return 'AGUARDANDO:' + campos.length;" +
+                "}" +
+
+                "for(var i=0;i<8;i++){" +
+
+                "var campo=campos[i];" +
+                "var numero=codigo.charAt(i);" +
 
                 "try{" +
 
-                "el.focus();" +
+                "campo.focus();" +
 
-                "var proto=Object.getPrototypeOf(el);" +
-                "var desc=Object.getOwnPropertyDescriptor(proto,'value');" +
+                /*
+                 * Primeiro tentamos alterar o value
+                 * usando o setter nativo do input.
+                 * Isso é importante para páginas React.
+                 */
 
-                "if(desc && desc.set){" +
-                "desc.set.call(el,code);" +
-                "}else{" +
-                "el.value=code;" +
-                "}" +
+                "var setter=" +
+                "Object.getOwnPropertyDescriptor(" +
+                "window.HTMLInputElement.prototype," +
+                "'value').set;" +
 
-                "el.dispatchEvent(new Event('input',{bubbles:true}));" +
-                "el.dispatchEvent(new Event('change',{bubbles:true}));" +
-                "el.dispatchEvent(new Event('keyup',{bubbles:true}));" +
-                "el.dispatchEvent(new Event('blur',{bubbles:true}));" +
+                "setter.call(campo,numero);" +
 
-                "return true;" +
+                /*
+                 * Avisamos o React/iFood que
+                 * o conteúdo realmente mudou.
+                 */
 
-                "}catch(e){" +
-                "return false;" +
-                "}" +
-
-                "}" +
-
-                "var campos=document.querySelectorAll(" +
-                "'input, textarea, [contenteditable=\"true\"]'" +
+                "campo.dispatchEvent(" +
+                "new Event('input',{" +
+                "bubbles:true" +
+                "})" +
                 ");" +
 
-                "for(var i=0;i<campos.length;i++){" +
+                "campo.dispatchEvent(" +
+                "new Event('change',{" +
+                "bubbles:true" +
+                "})" +
+                ");" +
 
-                "var el=campos[i];" +
+                "campo.dispatchEvent(" +
+                "new KeyboardEvent('keyup',{" +
+                "bubbles:true," +
+                "key:numero" +
+                "})" +
+                ");" +
 
-                "if(setValue(el)){" +
-                "return 'OK';" +
+                "}catch(e){" +
+
+                "campo.value=numero;" +
+
+                "campo.dispatchEvent(" +
+                "new Event('input',{" +
+                "bubbles:true" +
+                "})" +
+                ");" +
+
                 "}" +
 
                 "}" +
 
-                "return 'NAO_ENCONTROU';" +
+                "campos[7].focus();" +
+
+                "return 'PREENCHIDO:' + campos.length;" +
 
                 "})();";
 
         webView.evaluateJavascript(
-                js,
+                javascript,
+
                 result -> {
 
-                    if ("\"OK\"".equals(result)) {
+                    if (result != null
+                            && result.contains("PREENCHIDO")) {
 
+                        // Mostra apenas uma vez.
                         if (tentativa == 0) {
 
                             Toast.makeText(
                                     MainActivity.this,
-                                    "Código preenchido!",
+                                    "Código enviado aos 8 campos!",
                                     Toast.LENGTH_SHORT
                             ).show();
                         }
@@ -206,6 +266,7 @@ public class MainActivity extends Activity {
                 null,
 
                 "<html>" +
+
                 "<body style='" +
                 "font-family:sans-serif;" +
                 "background:#f3e7d3;" +
@@ -215,12 +276,17 @@ public class MainActivity extends Activity {
                 "Da Roça Entregas" +
                 "</h2>" +
 
-                "<p>Esta plataforma ainda não foi configurada.</p>" +
+                "<p>" +
+                "Esta plataforma ainda não foi configurada." +
+                "</p>" +
 
-                "<p>A estrutura está preparada para " +
-                "receber a 99Food futuramente.</p>" +
+                "<p>" +
+                "A estrutura está preparada para " +
+                "receber a 99Food futuramente." +
+                "</p>" +
 
                 "</body>" +
+
                 "</html>",
 
                 "text/html",
