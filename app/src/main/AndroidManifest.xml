@@ -1,19 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <uses-permission android:name="android.permission.INTERNET" />
-    <application android:theme="@style/Theme.DaRoca" android:label="Da Roça Entregas" android:usesCleartextTraffic="false">
-        <activity android:name=".MainActivity" android:exported="true">
+
+    <application
+        android:theme="@style/Theme.DaRoca"
+        android:label="Da Roça Entregas"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+
+            <!-- Ícone normal do aplicativo -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Estrutura preparada para links do tipo daroca://ifood/19840113 e futuramente daroca://99/... -->
+
+            <!-- Link interno daroca:// -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="daroca" />
             </intent-filter>
+
+            <!-- Links HTTPS enviados pelo WhatsApp -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="stunning-hamster-387b55.netlify.app"
+                    android:pathPrefix="/ifood/" />
+            </intent-filter>
+
         </activity>
+
     </application>
+
 </manifest>
