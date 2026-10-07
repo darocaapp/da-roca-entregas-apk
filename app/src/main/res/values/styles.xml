@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.DaRoca" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#6B4F35</item>
+        <item name="android:navigationBarColor">#F3E7D3</item>
+        <item name="android:statusBarColor">#6B4F35</item>
+    </style>
+</resources>
