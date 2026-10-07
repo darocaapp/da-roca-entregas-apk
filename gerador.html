@@ -7,7 +7,6 @@
 <title>Da Roça - Gerador iFood</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
@@ -123,7 +122,6 @@ button {
     font-weight: bold;
     min-height: 20px;
 }
-
 </style>
 </head>
 
@@ -155,8 +153,7 @@ button {
     <input
         type="text"
         id="codigo"
-        placeholder="Ex: 19840113"
-        maxlength="8"
+        placeholder="Pode colar: 1984 0113"
         inputmode="numeric"
         autocomplete="off"
     >
@@ -198,26 +195,76 @@ let linkGerado = "";
 const campoCodigo = document.getElementById("codigo");
 const campoNome = document.getElementById("nome");
 
+/*
+REMOVE AUTOMATICAMENTE:
+espaços
+traços
+pontos
+letras
+ou qualquer outro caractere
+
+Exemplo:
+1984 0113
+vira:
+19840113
+*/
+
 campoCodigo.addEventListener("input", function () {
 
-    this.value = this.value.replace(/\D/g, "").slice(0, 8);
+    let numeros =
+        this.value.replace(/\D/g, "");
 
+    this.value =
+        numeros.slice(0, 8);
 });
 
-campoCodigo.addEventListener("keydown", function(event) {
+/*
+TRATAMENTO ESPECIAL AO COLAR
+DO IFOOD
+*/
 
-    if (event.key === "Enter") {
-        gerar();
-    }
+campoCodigo.addEventListener("paste", function (event) {
 
+    event.preventDefault();
+
+    let texto =
+        (event.clipboardData || window.clipboardData)
+        .getData("text");
+
+    let numeros =
+        texto.replace(/\D/g, "").slice(0, 8);
+
+    this.value = numeros;
+
+    this.dispatchEvent(
+        new Event("input", { bubbles: true })
+    );
 });
+
+/*
+ENTER NO NOME:
+vai para o localizador
+*/
 
 campoNome.addEventListener("keydown", function(event) {
 
     if (event.key === "Enter") {
+
         campoCodigo.focus();
     }
+});
 
+/*
+ENTER NO LOCALIZADOR:
+gera o link
+*/
+
+campoCodigo.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+
+        gerar();
+    }
 });
 
 function gerar() {
@@ -225,8 +272,18 @@ function gerar() {
     const nome =
         campoNome.value.trim();
 
+    /*
+    REMOVE QUALQUER COISA
+    QUE NÃO SEJA NÚMERO NOVAMENTE
+    POR SEGURANÇA
+    */
+
     const codigo =
-        campoCodigo.value.replace(/\D/g, "");
+        campoCodigo.value
+        .replace(/\D/g, "")
+        .slice(0, 8);
+
+    campoCodigo.value = codigo;
 
     const aviso =
         document.getElementById("aviso");
@@ -257,22 +314,31 @@ function gerar() {
         BASE_LINK + codigo;
 
     mensagemGerada =
-        "🛵 ENTREGA: " + nome.toUpperCase() +
+        "🛵 ENTREGA: " +
+        nome.toUpperCase() +
         "\n\n" +
         "Confirmação iFood:" +
         "\n" +
         linkGerado;
 
-    document.getElementById("nomeResultado").textContent =
+    document.getElementById(
+        "nomeResultado"
+    ).textContent =
         "Cliente: " + nome;
 
-    document.getElementById("codigoResultado").textContent =
+    document.getElementById(
+        "codigoResultado"
+    ).textContent =
         "Localizador: " + codigo;
 
-    document.getElementById("linkResultado").textContent =
+    document.getElementById(
+        "linkResultado"
+    ).textContent =
         linkGerado;
 
-    document.getElementById("resultado").style.display =
+    document.getElementById(
+        "resultado"
+    ).style.display =
         "block";
 
     aviso.textContent =
@@ -291,7 +357,9 @@ async function copiarMensagem() {
             mensagemGerada
         );
 
-        document.getElementById("aviso").textContent =
+        document.getElementById(
+            "aviso"
+        ).textContent =
             "Mensagem copiada!";
 
     } catch (erro) {
@@ -299,7 +367,8 @@ async function copiarMensagem() {
         const area =
             document.createElement("textarea");
 
-        area.value = mensagemGerada;
+        area.value =
+            mensagemGerada;
 
         document.body.appendChild(area);
 
@@ -309,7 +378,9 @@ async function copiarMensagem() {
 
         document.body.removeChild(area);
 
-        document.getElementById("aviso").textContent =
+        document.getElementById(
+            "aviso"
+        ).textContent =
             "Mensagem copiada!";
     }
 }
@@ -322,9 +393,14 @@ function abrirWhatsApp() {
 
     const url =
         "https://wa.me/?text=" +
-        encodeURIComponent(mensagemGerada);
+        encodeURIComponent(
+            mensagemGerada
+        );
 
-    window.open(url, "_blank");
+    window.open(
+        url,
+        "_blank"
+    );
 }
 
 </script>
