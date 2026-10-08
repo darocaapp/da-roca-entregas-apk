@@ -16,10 +16,9 @@ import android.webkit.WebViewClient;
 
 import androidx.webkit.WebViewAssetLoader;
 
-import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import android.graphics.Bitmap;
@@ -35,6 +34,7 @@ public class MainActivity extends Activity {
     private PermissionRequest cameraRequest;
 
     private static final int CAMERA_REQUEST_CODE = 100;
+
     private static final String HOME_URL =
         "https://appassets.androidplatform.net/assets/index.html";
 
@@ -65,6 +65,7 @@ public class MainActivity extends Activity {
         );
 
         webView.setWebViewClient(new WebViewClient() {
+
             @Override
             public WebResourceResponse shouldInterceptRequest(
                 WebView view,
@@ -77,17 +78,20 @@ public class MainActivity extends Activity {
         });
 
         webView.setWebChromeClient(new WebChromeClient() {
+
             @Override
             public void onPermissionRequest(
                 PermissionRequest request
             ) {
                 runOnUiThread(() -> {
+
                     if (!"https".equals(
                             request.getOrigin().getScheme()
                         ) ||
                         !"appassets.androidplatform.net".equals(
                             request.getOrigin().getHost()
                         )) {
+
                         request.deny();
                         return;
                     }
@@ -96,9 +100,12 @@ public class MainActivity extends Activity {
 
                     for (String resource :
                             request.getResources()) {
+
                         if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
                                 .equals(resource)) {
+
                             wantsCamera = true;
+
                         } else {
                             request.deny();
                             return;
@@ -125,6 +132,7 @@ public class MainActivity extends Activity {
                         );
 
                     } else {
+
                         request.grant(
                             new String[]{
                                 PermissionRequest.RESOURCE_VIDEO_CAPTURE
@@ -144,6 +152,7 @@ public class MainActivity extends Activity {
         String[] permissions,
         int[] grantResults
     ) {
+
         super.onRequestPermissionsResult(
             requestCode,
             permissions,
@@ -164,6 +173,7 @@ public class MainActivity extends Activity {
                 );
 
             } else {
+
                 cameraRequest.deny();
             }
 
@@ -177,6 +187,7 @@ public class MainActivity extends Activity {
         public void reconhecerImagem(String base64) {
 
             try {
+
                 String imagemLimpa = base64.replaceFirst(
                     "^data:image/[^;]+;base64,",
                     ""
@@ -194,10 +205,12 @@ public class MainActivity extends Activity {
                 );
 
                 if (bitmap == null) {
+
                     enviarResultado(
                         "",
                         "Não foi possível ler a imagem."
                     );
+
                     return;
                 }
 
@@ -206,20 +219,28 @@ public class MainActivity extends Activity {
                     0
                 );
 
-                var recognizer = TextRecognition.getClient(
-                    TextRecognizerOptions.DEFAULT_OPTIONS
-                );
+                // Google ML Kit
+                // Correção do erro da linha 209
+
+                TextRecognizer recognizer =
+                    TextRecognition.getClient(
+                        TextRecognizerOptions.DEFAULT_OPTIONS
+                    );
 
                 recognizer.process(imagem)
                     .addOnSuccessListener(resultado -> {
+
                         String texto = resultado.getText();
 
                         String codigo =
                             encontrarLocalizador(texto);
 
                         if (!codigo.isEmpty()) {
+
                             enviarResultado(codigo, "");
+
                         } else {
+
                             enviarResultado(
                                 "",
                                 "Localizador não encontrado. " +
@@ -230,15 +251,18 @@ public class MainActivity extends Activity {
                         recognizer.close();
                     })
                     .addOnFailureListener(erro -> {
+
                         enviarResultado(
                             "",
                             "Erro ao reconhecer: " +
                             erro.getMessage()
                         );
+
                         recognizer.close();
                     });
 
             } catch (Exception erro) {
+
                 enviarResultado(
                     "",
                     "Erro ao processar imagem: " +
@@ -255,7 +279,7 @@ public class MainActivity extends Activity {
         }
 
         String textoMaiusculo =
-            texto.toUpperCase();
+            texto.toUpperCase(java.util.Locale.ROOT);
 
         Pattern padrao = Pattern.compile(
             "LOCALIZADOR[\\s:\\-]*([0-9\\s]{8,20})"
@@ -265,6 +289,7 @@ public class MainActivity extends Activity {
             padrao.matcher(textoMaiusculo);
 
         if (matcher.find()) {
+
             String numeros = matcher.group(1)
                 .replaceAll("\\D", "");
 
@@ -280,8 +305,9 @@ public class MainActivity extends Activity {
 
             if (linhas[i].contains("LOCALIZADOR")) {
 
-                for (int j = i; j <= i + 2 &&
-                        j < linhas.length; j++) {
+                for (int j = i;
+                     j <= i + 2 && j < linhas.length;
+                     j++) {
 
                     Matcher numeros =
                         Pattern.compile("\\d{8}")
@@ -306,10 +332,14 @@ public class MainActivity extends Activity {
         String codigo,
         String erro
     ) {
+
         runOnUiThread(() -> {
-            String js = "window.receberResultadoOCR(" +
+
+            String js =
+                "window.receberResultadoOCR(" +
                 org.json.JSONObject.quote(codigo) + "," +
-                org.json.JSONObject.quote(erro) + ");";
+                org.json.JSONObject.quote(erro) +
+                ");";
 
             webView.evaluateJavascript(js, null);
         });
@@ -317,15 +347,20 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+
         if (webView != null) {
+
             webView.loadUrl(HOME_URL);
+
         } else {
+
             super.onBackPressed();
         }
     }
 
     @Override
     protected void onDestroy() {
+
         if (webView != null) {
             webView.destroy();
         }
