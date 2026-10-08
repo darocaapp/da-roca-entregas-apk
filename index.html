@@ -1,11 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-      content="width=device-width, initial-scale=1">
-<title>DAROÇA Entregas</title>
+      content="width=device-width, initial-scale=1.0,
+      maximum-scale=1.0, user-scalable=no">
+
+<title>DAROÇA Entregas 3.1</title>
 
 <style>
 * {
@@ -14,373 +15,637 @@
 
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    padding: 18px;
     background: #f4eadc;
-    color: #493322;
+    color: #493224;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 520px;
+    margin: auto;
 }
 
 header {
-    background: #5a3824;
-    color: white;
     text-align: center;
-    padding: 24px 15px;
+    margin: 20px 0 28px;
 }
 
-header h1 {
+h1 {
+    font-size: 36px;
     margin: 0;
-    font-size: 32px;
+    color: #593b27;
 }
 
-header p {
-    margin: 8px 0 0;
-    color: #ead7c2;
-}
-
-main {
-    max-width: 480px;
-    margin: auto;
-    padding: 22px;
+.subtitle {
+    font-size: 14px;
+    margin-top: 6px;
+    color: #80664e;
 }
 
 .card {
     background: #fffaf3;
+    padding: 20px;
     border-radius: 18px;
-    padding: 22px;
-    box-shadow: 0 4px 14px #00000015;
-    text-align: center;
+    box-shadow: 0 5px 18px rgba(0,0,0,.08);
+    margin-bottom: 18px;
 }
 
 h2 {
+    font-size: 21px;
     margin-top: 0;
 }
 
 button {
     width: 100%;
-    border: none;
+    padding: 17px;
+    margin: 8px 0;
+    border: 0;
     border-radius: 12px;
-    padding: 16px;
-    margin-top: 12px;
     font-size: 17px;
     font-weight: bold;
     cursor: pointer;
 }
 
 .ifood {
-    background: #e92d39;
+    background: #e52b35;
     color: white;
 }
 
 .food99 {
-    background: #f6cb27;
-    color: #272727;
+    background: #ffb900;
+    color: #322200;
 }
 
-.principal {
-    background: #587342;
+.verde {
+    background: #39774a;
     color: white;
 }
 
-.secundario {
-    background: #e9d8c5;
-    color: #493322;
+.marrom {
+    background: #76513a;
+    color: white;
+}
+
+.cinza {
+    background: #e8ded0;
+    color: #493224;
+}
+
+input {
+    width: 100%;
+    padding: 17px;
+    font-size: 27px;
+    text-align: center;
+    letter-spacing: 3px;
+    border: 2px solid #cdb89e;
+    border-radius: 12px;
+    background: white;
+}
+
+.camera-box {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #171717;
+    border-radius: 14px;
+    margin: 15px 0;
 }
 
 video {
     display: block;
     width: 100%;
-    background: #222;
-    border-radius: 12px;
-    margin: 16px 0;
+    height: 310px;
+    object-fit: cover;
 }
 
-input {
-    width: 100%;
-    font-size: 26px;
+.mira {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 88%;
+    height: 105px;
+    border: 2px solid #64f59c;
+    border-radius: 10px;
+    pointer-events: none;
+    box-shadow: 0 0 0 100vmax rgba(0,0,0,.12);
+}
+
+.status {
     padding: 13px;
+    border-radius: 10px;
+    background: #eee3d4;
+    font-size: 14px;
     text-align: center;
-    letter-spacing: 3px;
-    border: 2px solid #c8aa8a;
-    border-radius: 12px;
-}
-
-#mensagem {
-    margin-top: 16px;
-    font-weight: bold;
+    margin: 12px 0;
     line-height: 1.5;
-    overflow-wrap: anywhere;
 }
 
-.oculto {
-    display: none;
+.sucesso {
+    background: #d9f2df;
+    color: #205a32;
+}
+
+.erro {
+    background: #ffe0dd;
+    color: #8a2922;
+}
+
+.diagnostico {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eee9e1;
+    border-radius: 10px;
+}
+
+.diagnostico pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+small {
+    color: #80664e;
+}
+
+.hidden {
+    display: none !important;
 }
 </style>
 </head>
 
 <body>
 
+<div class="container">
+
 <header>
     <h1>DAROÇA</h1>
-    <p>Entregas • Leitor de localizador</p>
+    <div class="subtitle">
+        ENTREGAS • LEITOR INTELIGENTE 3.1
+    </div>
 </header>
 
-<main>
-    <section id="inicio" class="card">
-        <h2>Escolha a plataforma</h2>
-        <p>Vamos identificar o localizador pela câmera.</p>
+<section id="inicio" class="card">
 
-        <button class="ifood"
-                onclick="iniciar('ifood')">
-            LER iFood
-        </button>
+    <h2>Escolha a plataforma</h2>
 
-        <button class="food99"
-                onclick="iniciar('99')">
-            LER 99Food
-        </button>
-    </section>
+    <button class="ifood"
+            onclick="abrirLeitor('ifood')">
+        LER iFood
+    </button>
 
-    <section id="leitor" class="card oculto">
-        <h2 id="tituloLeitor">Ler localizador</h2>
+    <button class="food99"
+            onclick="abrirLeitor('99')">
+        LER 99Food
+    </button>
+
+    <p>
+        Aponte a câmera para o localizador
+        impresso na comanda.
+    </p>
+
+</section>
+
+<section id="leitor" class="card hidden">
+
+    <h2 id="tituloPlataforma">
+        Leitor
+    </h2>
+
+    <div class="camera-box">
 
         <video id="camera"
                autoplay
-               playsinline
-               muted></video>
+               muted
+               playsinline>
+        </video>
 
-        <button id="botaoIdentificar"
-                class="principal"
-                onclick="identificar()">
-            IDENTIFICAR LOCALIZADOR
-        </button>
+        <div class="mira"></div>
 
-        <p id="mensagem" role="status"></p>
+    </div>
 
-        <h3>Código identificado</h3>
+    <div id="status" class="status">
+        Preparando câmera...
+    </div>
 
-        <input id="codigo"
-               type="text"
-               inputmode="numeric"
-               maxlength="8"
-               placeholder="8 números"
-               autocomplete="off">
+    <button class="verde"
+            id="botaoLeitura"
+            onclick="alternarLeitura()">
+        PAUSAR LEITURA AUTOMÁTICA
+    </button>
 
-        <button class="principal"
-                onclick="confirmarCodigo()">
-            CONFIRMAR CÓDIGO
-        </button>
+    <button class="cinza"
+            onclick="identificarManualmente()">
+        TENTAR IDENTIFICAR AGORA
+    </button>
 
-        <button class="secundario"
-                onclick="voltarInicio()">
-            VOLTAR
-        </button>
-    </section>
-</main>
+    <h2>Localizador</h2>
 
-<canvas id="foto" class="oculto"></canvas>
+    <input id="codigo"
+           type="text"
+           inputmode="numeric"
+           maxlength="8"
+           placeholder="8 números"
+           oninput="limparCodigo(this)">
+
+    <button class="marrom"
+            onclick="confirmarCodigo()">
+        CONFIRMAR CÓDIGO
+    </button>
+
+    <div class="diagnostico">
+
+        <strong>Diagnóstico da câmera</strong>
+
+        <pre id="diagnosticoTexto">Aguardando leitura...</pre>
+
+    </div>
+
+    <button class="cinza"
+            onclick="voltarInicio()">
+        VOLTAR
+    </button>
+
+</section>
+
+</div>
+
+<canvas id="captura" class="hidden"></canvas>
 
 <script>
-let plataforma = "";
-let transmissao = null;
-let processando = false;
 
 const camera = document.getElementById("camera");
-const mensagem = document.getElementById("mensagem");
-const codigo = document.getElementById("codigo");
-const botao = document.getElementById("botaoIdentificar");
+const captura = document.getElementById("captura");
+const codigoInput = document.getElementById("codigo");
+const statusBox = document.getElementById("status");
+const diagnosticoTexto =
+    document.getElementById("diagnosticoTexto");
 
-function mostrarMensagem(texto) {
-    mensagem.textContent = texto;
+let plataforma = "";
+let stream = null;
+let temporizador = null;
+let processando = false;
+let leituraAtiva = false;
+let codigoEncontrado = false;
+let sessao = 0;
+let aguardandoResposta = null;
+
+function mostrarStatus(mensagem, tipo = "") {
+
+    statusBox.textContent = mensagem;
+
+    statusBox.className = "status";
+
+    if (tipo) {
+        statusBox.classList.add(tipo);
+    }
 }
 
-async function iniciar(tipo) {
+function limparCodigo(campo) {
+
+    campo.value = campo.value
+        .replace(/\D/g, "")
+        .slice(0, 8);
+}
+
+async function abrirLeitor(tipo) {
+
+    await pararCamera();
+
+    sessao++;
+
     plataforma = tipo;
-    codigo.value = "";
-    mostrarMensagem("");
+    codigoEncontrado = false;
+    processando = false;
+    leituraAtiva = true;
+
+    codigoInput.value = "";
+
+    diagnosticoTexto.textContent =
+        "Aguardando reconhecimento...";
 
     document.getElementById("inicio")
-        .classList.add("oculto");
+        .classList.add("hidden");
 
     document.getElementById("leitor")
-        .classList.remove("oculto");
+        .classList.remove("hidden");
 
-    document.getElementById("tituloLeitor")
+    document.getElementById("tituloPlataforma")
         .textContent =
         tipo === "ifood"
-        ? "Localizador iFood"
-        : "Localizador 99Food";
+            ? "Leitor iFood"
+            : "Leitor 99Food";
+
+    atualizarBotaoLeitura();
+
+    mostrarStatus("Solicitando câmera...");
 
     try {
-        transmissao =
-            await navigator.mediaDevices.getUserMedia({
+
+        stream = await navigator.mediaDevices
+            .getUserMedia({
+
                 audio: false,
+
                 video: {
                     facingMode: {
                         ideal: "environment"
+                    },
+
+                    width: {
+                        ideal: 1920
+                    },
+
+                    height: {
+                        ideal: 1080
                     }
                 }
             });
 
-        camera.srcObject = transmissao;
+        camera.srcObject = stream;
+
         await camera.play();
 
-        mostrarMensagem(
-            "Câmera pronta! Aponte para o localizador."
+        mostrarStatus(
+            "Procurando LOCALIZADOR automaticamente..."
         );
 
+        const minhaSessao = sessao;
+
+        temporizador = setInterval(() => {
+
+            if (minhaSessao === sessao) {
+                executarLeitura();
+            }
+
+        }, 1100);
+
     } catch (erro) {
-        mostrarMensagem(
+
+        mostrarStatus(
             "Não foi possível abrir a câmera: " +
-            erro.message
+            erro.message,
+            "erro"
         );
     }
 }
 
-function identificar() {
-    if (processando) {
+function atualizarBotaoLeitura() {
+
+    document.getElementById("botaoLeitura")
+        .textContent = leituraAtiva
+            ? "PAUSAR LEITURA AUTOMÁTICA"
+            : "RETOMAR LEITURA AUTOMÁTICA";
+}
+
+function alternarLeitura() {
+
+    leituraAtiva = !leituraAtiva;
+
+    atualizarBotaoLeitura();
+
+    if (leituraAtiva) {
+
+        codigoEncontrado = false;
+
+        mostrarStatus(
+            "Procurando LOCALIZADOR..."
+        );
+
+    } else {
+
+        mostrarStatus("Leitura pausada.");
+    }
+}
+
+function identificarManualmente() {
+
+    codigoEncontrado = false;
+
+    executarLeitura(true);
+}
+
+function executarLeitura(forcar = false) {
+
+    if (!forcar && !leituraAtiva) {
         return;
     }
 
-    if (!camera.videoWidth ||
-        !camera.videoHeight) {
-        mostrarMensagem(
-            "A câmera ainda não está pronta."
-        );
+    if (processando || codigoEncontrado) {
         return;
     }
 
-    if (!window.DaRocaAndroid ||
-        typeof window.DaRocaAndroid.reconhecerImagem
-            !== "function") {
-        mostrarMensagem(
-            "Reconhecimento Android indisponível. " +
-            "Verifique se instalou o APK atualizado."
+    if (!stream || camera.readyState < 2) {
+        return;
+    }
+
+    if (
+        !window.DaRocaAndroid ||
+        !window.DaRocaAndroid.reconhecerImagem
+    ) {
+
+        mostrarStatus(
+            "Reconhecimento Android indisponível.",
+            "erro"
         );
+
         return;
     }
 
     processando = true;
-    botao.disabled = true;
-    botao.textContent = "LENDO LOCALIZADOR...";
-
-    mostrarMensagem(
-        "Analisando a imagem. Aguarde..."
-    );
 
     try {
-        const canvas =
-            document.getElementById("foto");
 
-        canvas.width = camera.videoWidth;
-        canvas.height = camera.videoHeight;
+        const largura = camera.videoWidth;
+        const altura = camera.videoHeight;
 
-        const contexto = canvas.getContext("2d");
+        if (!largura || !altura) {
+
+            processando = false;
+            return;
+        }
+
+        captura.width = largura;
+        captura.height = altura;
+
+        const contexto = captura.getContext("2d");
 
         contexto.drawImage(
             camera,
             0,
             0,
-            canvas.width,
-            canvas.height
+            largura,
+            altura
         );
 
-        const imagem =
-            canvas.toDataURL("image/jpeg", 0.9);
+        const imagem = captura.toDataURL(
+            "image/jpeg",
+            0.95
+        );
 
-        window.DaRocaAndroid.reconhecerImagem(imagem);
+        aguardandoResposta = sessao;
+
+        window.DaRocaAndroid.reconhecerImagem(
+            imagem
+        );
+
+        mostrarStatus(
+            "Analisando a comanda..."
+        );
 
     } catch (erro) {
-        finalizarLeitura();
 
-        mostrarMensagem(
-            "Erro ao capturar a imagem: " +
-            erro.message
+        processando = false;
+        aguardandoResposta = null;
+
+        mostrarStatus(
+            "Erro na leitura: " + erro.message,
+            "erro"
         );
     }
 }
 
-function finalizarLeitura() {
-    processando = false;
-    botao.disabled = false;
-    botao.textContent = "IDENTIFICAR LOCALIZADOR";
-}
+function receberResultadoOCR(numero, erro) {
 
-window.receberResultadoOCR = function(
-    numero,
-    erro
-) {
-    finalizarLeitura();
+    if (aguardandoResposta !== sessao) {
+        return;
+    }
+
+    aguardandoResposta = null;
+    processando = false;
 
     if (erro) {
-        mostrarMensagem(erro);
+
+        diagnosticoTexto.textContent = erro;
+
+        if (leituraAtiva) {
+
+            mostrarStatus(
+                "Procurando localizador..."
+            );
+
+        } else {
+
+            mostrarStatus(erro, "erro");
+        }
+
         return;
     }
 
-    const somenteNumeros =
-        String(numero || "").replace(/\D/g, "");
+    const codigo = String(numero || "")
+        .replace(/\D/g, "")
+        .slice(0, 8);
 
-    if (somenteNumeros.length === 8) {
-        codigo.value = somenteNumeros;
+    if (codigo.length === 8) {
 
-        mostrarMensagem(
-            "Localizador identificado: " +
-            somenteNumeros
+        codigoEncontrado = true;
+        leituraAtiva = false;
+
+        atualizarBotaoLeitura();
+
+        codigoInput.value = codigo;
+
+        diagnosticoTexto.textContent =
+            "Localizador identificado: " + codigo;
+
+        mostrarStatus(
+            "Localizador encontrado: " + codigo,
+            "sucesso"
         );
+
+        if (navigator.vibrate) {
+            navigator.vibrate(120);
+        }
 
     } else {
-        mostrarMensagem(
-            "Não encontrei os 8 números. " +
-            "Tente novamente ou digite manualmente."
+
+        mostrarStatus(
+            "Procurando localizador..."
         );
     }
-};
+}
 
 function confirmarCodigo() {
-    const numero =
-        codigo.value.replace(/\D/g, "");
 
-    if (numero.length !== 8) {
-        mostrarMensagem(
-            "Digite ou identifique os 8 números."
+    const codigo = codigoInput.value
+        .replace(/\D/g, "");
+
+    if (codigo.length !== 8) {
+
+        mostrarStatus(
+            "Digite ou identifique os 8 números.",
+            "erro"
         );
+
         return;
     }
 
-    mostrarMensagem(
-        "Código " + numero +
+    mostrarStatus(
+        "Código " + codigo +
         " identificado para " +
         (plataforma === "ifood"
             ? "iFood"
             : "99Food") +
-        ". Próxima etapa: abrir a confirmação."
+        ". A abertura da plataforma será " +
+        "integrada na próxima etapa.",
+        "sucesso"
     );
 }
 
-function pararCamera() {
-    if (transmissao) {
-        transmissao.getTracks().forEach(
-            faixa => faixa.stop()
+async function pararCamera() {
+
+    leituraAtiva = false;
+
+    if (temporizador) {
+
+        clearInterval(temporizador);
+        temporizador = null;
+    }
+
+    if (stream) {
+
+        stream.getTracks().forEach(
+            track => track.stop()
         );
 
-        transmissao = null;
+        stream = null;
     }
 
     camera.srcObject = null;
 }
 
-function voltarInicio() {
-    pararCamera();
-    finalizarLeitura();
+async function voltarInicio() {
 
-    plataforma = "";
-    codigo.value = "";
-    mostrarMensagem("");
+    sessao++;
+
+    aguardandoResposta = null;
+    processando = false;
+    codigoEncontrado = false;
+
+    await pararCamera();
 
     document.getElementById("leitor")
-        .classList.add("oculto");
+        .classList.add("hidden");
 
     document.getElementById("inicio")
-        .classList.remove("oculto");
+        .classList.remove("hidden");
 }
+
+window.receberResultadoOCR = receberResultadoOCR;
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (document.hidden) {
+            pararCamera();
+        }
+    }
+);
+
 </script>
 
 </body>
