@@ -4,8 +4,11 @@ package com.daroca.entregas;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
@@ -21,10 +24,9 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
+import org.json.JSONObject;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +40,8 @@ public class MainActivity extends Activity {
     private static final String HOME_URL =
         "https://appassets.androidplatform.net/assets/index.html";
 
+    private TextRecognizer recognizer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +49,10 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         webView = findViewById(R.id.webView);
+
+        recognizer = TextRecognition.getClient(
+            TextRecognizerOptions.DEFAULT_OPTIONS
+        );
 
         WebViewAssetLoader assetLoader =
             new WebViewAssetLoader.Builder()
@@ -83,44 +91,47 @@ public class MainActivity extends Activity {
             public void onPermissionRequest(
                 PermissionRequest request
             ) {
+
                 runOnUiThread(() -> {
 
-                    if (!"https".equals(
+                    if (
+                        !"https".equals(
                             request.getOrigin().getScheme()
                         ) ||
                         !"appassets.androidplatform.net".equals(
                             request.getOrigin().getHost()
-                        )) {
-
+                        )
+                    ) {
                         request.deny();
                         return;
                     }
 
-                    boolean wantsCamera = false;
+                    boolean querCamera = false;
 
-                    for (String resource :
-                            request.getResources()) {
+                    for (String recurso : request.getResources()) {
 
-                        if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
-                                .equals(resource)) {
-
-                            wantsCamera = true;
-
+                        if (
+                            PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                                .equals(recurso)
+                        ) {
+                            querCamera = true;
                         } else {
                             request.deny();
                             return;
                         }
                     }
 
-                    if (!wantsCamera) {
+                    if (!querCamera) {
                         request.deny();
                         return;
                     }
 
-                    if (Build.VERSION.SDK_INT >= 23 &&
+                    if (
+                        Build.VERSION.SDK_INT >= 23 &&
                         checkSelfPermission(
                             Manifest.permission.CAMERA
-                        ) != PackageManager.PERMISSION_GRANTED) {
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
 
                         cameraRequest = request;
 
@@ -159,12 +170,16 @@ public class MainActivity extends Activity {
             grantResults
         );
 
-        if (requestCode == CAMERA_REQUEST_CODE &&
-            cameraRequest != null) {
+        if (
+            requestCode == CAMERA_REQUEST_CODE &&
+            cameraRequest != null
+        ) {
 
-            if (grantResults.length > 0 &&
+            if (
+                grantResults.length > 0 &&
                 grantResults[0] ==
-                    PackageManager.PERMISSION_GRANTED) {
+                    PackageManager.PERMISSION_GRANTED
+            ) {
 
                 cameraRequest.grant(
                     new String[]{
@@ -208,7 +223,7 @@ public class MainActivity extends Activity {
 
                     enviarResultado(
                         "",
-                        "Não foi possível ler a imagem."
+                        "Não foi possível decodificar a imagem."
                     );
 
                     return;
@@ -219,15 +234,8 @@ public class MainActivity extends Activity {
                     0
                 );
 
-                // Google ML Kit
-                // Correção do erro da linha 209
-
-                TextRecognizer recognizer =
-                    TextRecognition.getClient(
-                        TextRecognizerOptions.DEFAULT_OPTIONS
-                    );
-
                 recognizer.process(imagem)
+
                     .addOnSuccessListener(resultado -> {
 
                         String texto = resultado.getText();
@@ -241,24 +249,38 @@ public class MainActivity extends Activity {
 
                         } else {
 
+                            String diagnostico;
+
+                            if (
+                                texto == null ||
+                                texto.trim().isEmpty()
+                            ) {
+
+                                diagnostico =
+                                    "O Google ML Kit não reconheceu " +
+                                    "nenhum texto nesta imagem.";
+
+                            } else {
+
+                                diagnostico =
+                                    "Texto reconhecido pelo ML Kit:\n\n" +
+                                    texto;
+                            }
+
                             enviarResultado(
                                 "",
-                                "Localizador não encontrado. " +
-                                "Tente aproximar a câmera."
+                                diagnostico
                             );
                         }
-
-                        recognizer.close();
                     })
+
                     .addOnFailureListener(erro -> {
 
                         enviarResultado(
                             "",
-                            "Erro ao reconhecer: " +
+                            "Erro no reconhecimento: " +
                             erro.getMessage()
                         );
-
-                        recognizer.close();
                     });
 
             } catch (Exception erro) {
@@ -274,53 +296,71 @@ public class MainActivity extends Activity {
 
     private String encontrarLocalizador(String texto) {
 
-        if (texto == null) {
+        if (texto == null || texto.trim().isEmpty()) {
             return "";
         }
 
-        String textoMaiusculo =
-            texto.toUpperCase(java.util.Locale.ROOT);
+        String normalizado = texto
+            .toUpperCase(Locale.ROOT)
+            .replace("\r", "\n");
 
-        Pattern padrao = Pattern.compile(
-            "LOCALIZADOR[\\s:\\-]*([0-9\\s]{8,20})"
+        String[] linhas = normalizado.split("\n");
+
+        Pattern palavraLocalizador = Pattern.compile(
+            "LOCAL[I1L]ZADOR"
         );
 
-        Matcher matcher =
-            padrao.matcher(textoMaiusculo);
-
-        if (matcher.find()) {
-
-            String numeros = matcher.group(1)
-                .replaceAll("\\D", "");
-
-            if (numeros.length() >= 8) {
-                return numeros.substring(0, 8);
-            }
-        }
-
-        String[] linhas =
-            textoMaiusculo.split("\\n");
+        Pattern numeros = Pattern.compile(
+            "\\d+"
+        );
 
         for (int i = 0; i < linhas.length; i++) {
 
-            if (linhas[i].contains("LOCALIZADOR")) {
+            Matcher palavra = palavraLocalizador.matcher(
+                linhas[i]
+            );
 
-                for (int j = i;
-                     j <= i + 2 && j < linhas.length;
-                     j++) {
+            if (!palavra.find()) {
+                continue;
+            }
 
-                    Matcher numeros =
-                        Pattern.compile("\\d{8}")
-                            .matcher(
-                                linhas[j].replaceAll(
-                                    "\\s",
-                                    ""
-                                )
-                            );
+            StringBuilder acumulado =
+                new StringBuilder();
 
-                    if (numeros.find()) {
-                        return numeros.group();
-                    }
+            // Começa depois da palavra LOCALIZADOR.
+            String restante = linhas[i].substring(
+                palavra.end()
+            );
+
+            juntarNumeros(
+                restante,
+                acumulado,
+                numeros
+            );
+
+            if (acumulado.length() == 8) {
+                return acumulado.toString();
+            }
+
+            // Procura também nas duas linhas seguintes.
+            for (
+                int j = i + 1;
+                j <= i + 2 && j < linhas.length;
+                j++
+            ) {
+
+                juntarNumeros(
+                    linhas[j],
+                    acumulado,
+                    numeros
+                );
+
+                if (acumulado.length() == 8) {
+                    return acumulado.toString();
+                }
+
+                if (acumulado.length() > 8) {
+                    break;
                 }
             }
         }
@@ -328,20 +368,55 @@ public class MainActivity extends Activity {
         return "";
     }
 
+    private void juntarNumeros(
+        String trecho,
+        StringBuilder acumulado,
+        Pattern padrao
+    ) {
+
+        Matcher matcher = padrao.matcher(trecho);
+
+        while (matcher.find()) {
+
+            String grupo = matcher.group();
+
+            if (
+                acumulado.length() +
+                grupo.length() > 8
+            ) {
+                return;
+            }
+
+            acumulado.append(grupo);
+
+            if (acumulado.length() == 8) {
+                return;
+            }
+        }
+    }
+
     private void enviarResultado(
         String codigo,
-        String erro
+        String diagnostico
     ) {
 
         runOnUiThread(() -> {
 
-            String js =
+            if (webView == null) {
+                return;
+            }
+
+            String javascript =
                 "window.receberResultadoOCR(" +
-                org.json.JSONObject.quote(codigo) + "," +
-                org.json.JSONObject.quote(erro) +
+                JSONObject.quote(codigo) +
+                "," +
+                JSONObject.quote(diagnostico) +
                 ");";
 
-            webView.evaluateJavascript(js, null);
+            webView.evaluateJavascript(
+                javascript,
+                null
+            );
         });
     }
 
@@ -361,8 +436,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
 
+        if (recognizer != null) {
+            recognizer.close();
+        }
+
         if (webView != null) {
             webView.destroy();
+            webView = null;
         }
 
         super.onDestroy();
