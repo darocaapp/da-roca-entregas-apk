@@ -6,28 +6,37 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import androidx.webkit.WebViewAssetLoader;
+
+import com.google.android.gms.tasks.Task;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
     private PermissionRequest cameraRequest;
 
-    private static final int CAMERA_PERMISSION = 100;
-
+    private static final int CAMERA_REQUEST_CODE = 100;
     private static final String HOME_URL =
         "https://appassets.androidplatform.net/assets/index.html";
-
-    private WebViewAssetLoader assetLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,28 +46,30 @@ public class MainActivity extends Activity {
 
         webView = findViewById(R.id.webView);
 
-        assetLoader = new WebViewAssetLoader.Builder()
-            .addPathHandler(
-                "/assets/",
-                new WebViewAssetLoader.AssetsPathHandler(this)
-            )
-            .build();
+        WebViewAssetLoader assetLoader =
+            new WebViewAssetLoader.Builder()
+                .addPathHandler(
+                    "/assets/",
+                    new WebViewAssetLoader.AssetsPathHandler(this)
+                )
+                .build();
 
-        WebSettings settings = webView.getSettings();
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setAllowFileAccess(false);
+        webView.getSettings().setAllowContentAccess(false);
 
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(false);
-        settings.setAllowContentAccess(false);
-        settings.setMediaPlaybackRequiresUserGesture(false);
+        webView.addJavascriptInterface(
+            new AndroidBridge(),
+            "DaRocaAndroid"
+        );
 
         webView.setWebViewClient(new WebViewClient() {
-
             @Override
             public WebResourceResponse shouldInterceptRequest(
-                    WebView view,
-                    WebResourceRequest request) {
-
+                WebView view,
+                WebResourceRequest request
+            ) {
                 return assetLoader.shouldInterceptRequest(
                     request.getUrl()
                 );
@@ -66,156 +77,255 @@ public class MainActivity extends Activity {
         });
 
         webView.setWebChromeClient(new WebChromeClient() {
-
             @Override
             public void onPermissionRequest(
-                    PermissionRequest request) {
-
+                PermissionRequest request
+            ) {
                 runOnUiThread(() -> {
-
-                    boolean solicitaCamera = false;
-
-                    for (String resource : request.getResources()) {
-
-                        if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
-                                .equals(resource)) {
-
-                            solicitaCamera = true;
-                        }
+                    if (!"https".equals(
+                            request.getOrigin().getScheme()
+                        ) ||
+                        !"appassets.androidplatform.net".equals(
+                            request.getOrigin().getHost()
+                        )) {
+                        request.deny();
+                        return;
                     }
 
-                    // Autoriza somente a câmera da nossa tela.
-                    if (!solicitaCamera ||
-                        !HOME_URL.equals(
-                            request.getOrigin().toString()
-                                .replaceAll("/$", "") + "/index.html"
-                        )) {
+                    boolean wantsCamera = false;
 
-                        // A origem normalmente termina em /,
-                        // por isso validamos também pelo host.
-                        if (!solicitaCamera ||
-                            !"appassets.androidplatform.net".equals(
-                                request.getOrigin().getHost()
-                            ) ||
-                            !"https".equals(
-                                request.getOrigin().getScheme()
-                            )) {
-
+                    for (String resource :
+                            request.getResources()) {
+                        if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                                .equals(resource)) {
+                            wantsCamera = true;
+                        } else {
                             request.deny();
                             return;
                         }
                     }
 
-                    cameraRequest = request;
+                    if (!wantsCamera) {
+                        request.deny();
+                        return;
+                    }
 
                     if (Build.VERSION.SDK_INT >= 23 &&
                         checkSelfPermission(
                             Manifest.permission.CAMERA
                         ) != PackageManager.PERMISSION_GRANTED) {
 
+                        cameraRequest = request;
+
                         requestPermissions(
                             new String[]{
                                 Manifest.permission.CAMERA
                             },
-                            CAMERA_PERMISSION
+                            CAMERA_REQUEST_CODE
                         );
 
                     } else {
-                        liberarCamera();
+                        request.grant(
+                            new String[]{
+                                PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                            }
+                        );
                     }
                 });
-            }
-
-            @Override
-            public void onPermissionRequestCanceled(
-                    PermissionRequest request) {
-
-                if (cameraRequest == request) {
-                    cameraRequest = null;
-                }
             }
         });
 
         webView.loadUrl(HOME_URL);
     }
 
-    private void liberarCamera() {
-
-        if (cameraRequest != null) {
-
-            cameraRequest.grant(
-                new String[]{
-                    PermissionRequest.RESOURCE_VIDEO_CAPTURE
-                }
-            );
-
-            cameraRequest = null;
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(
-            int requestCode,
-            String[] permissions,
-            int[] grantResults) {
-
+        int requestCode,
+        String[] permissions,
+        int[] grantResults
+    ) {
         super.onRequestPermissionsResult(
             requestCode,
             permissions,
             grantResults
         );
 
-        if (requestCode == CAMERA_PERMISSION) {
+        if (requestCode == CAMERA_REQUEST_CODE &&
+            cameraRequest != null) {
 
             if (grantResults.length > 0 &&
                 grantResults[0] ==
                     PackageManager.PERMISSION_GRANTED) {
 
-                liberarCamera();
+                cameraRequest.grant(
+                    new String[]{
+                        PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                    }
+                );
 
             } else {
+                cameraRequest.deny();
+            }
 
-                if (cameraRequest != null) {
-                    cameraRequest.deny();
-                    cameraRequest = null;
+            cameraRequest = null;
+        }
+    }
+
+    public class AndroidBridge {
+
+        @JavascriptInterface
+        public void reconhecerImagem(String base64) {
+
+            try {
+                String imagemLimpa = base64.replaceFirst(
+                    "^data:image/[^;]+;base64,",
+                    ""
+                );
+
+                byte[] bytes = Base64.decode(
+                    imagemLimpa,
+                    Base64.DEFAULT
+                );
+
+                Bitmap bitmap = BitmapFactory.decodeByteArray(
+                    bytes,
+                    0,
+                    bytes.length
+                );
+
+                if (bitmap == null) {
+                    enviarResultado(
+                        "",
+                        "Não foi possível ler a imagem."
+                    );
+                    return;
                 }
 
-                Toast.makeText(
-                    this,
-                    "Permissão da câmera negada",
-                    Toast.LENGTH_LONG
-                ).show();
+                InputImage imagem = InputImage.fromBitmap(
+                    bitmap,
+                    0
+                );
+
+                var recognizer = TextRecognition.getClient(
+                    TextRecognizerOptions.DEFAULT_OPTIONS
+                );
+
+                recognizer.process(imagem)
+                    .addOnSuccessListener(resultado -> {
+                        String texto = resultado.getText();
+
+                        String codigo =
+                            encontrarLocalizador(texto);
+
+                        if (!codigo.isEmpty()) {
+                            enviarResultado(codigo, "");
+                        } else {
+                            enviarResultado(
+                                "",
+                                "Localizador não encontrado. " +
+                                "Tente aproximar a câmera."
+                            );
+                        }
+
+                        recognizer.close();
+                    })
+                    .addOnFailureListener(erro -> {
+                        enviarResultado(
+                            "",
+                            "Erro ao reconhecer: " +
+                            erro.getMessage()
+                        );
+                        recognizer.close();
+                    });
+
+            } catch (Exception erro) {
+                enviarResultado(
+                    "",
+                    "Erro ao processar imagem: " +
+                    erro.getMessage()
+                );
             }
         }
     }
 
+    private String encontrarLocalizador(String texto) {
+
+        if (texto == null) {
+            return "";
+        }
+
+        String textoMaiusculo =
+            texto.toUpperCase();
+
+        Pattern padrao = Pattern.compile(
+            "LOCALIZADOR[\\s:\\-]*([0-9\\s]{8,20})"
+        );
+
+        Matcher matcher =
+            padrao.matcher(textoMaiusculo);
+
+        if (matcher.find()) {
+            String numeros = matcher.group(1)
+                .replaceAll("\\D", "");
+
+            if (numeros.length() >= 8) {
+                return numeros.substring(0, 8);
+            }
+        }
+
+        String[] linhas =
+            textoMaiusculo.split("\\n");
+
+        for (int i = 0; i < linhas.length; i++) {
+
+            if (linhas[i].contains("LOCALIZADOR")) {
+
+                for (int j = i; j <= i + 2 &&
+                        j < linhas.length; j++) {
+
+                    Matcher numeros =
+                        Pattern.compile("\\d{8}")
+                            .matcher(
+                                linhas[j].replaceAll(
+                                    "\\s",
+                                    ""
+                                )
+                            );
+
+                    if (numeros.find()) {
+                        return numeros.group();
+                    }
+                }
+            }
+        }
+
+        return "";
+    }
+
+    private void enviarResultado(
+        String codigo,
+        String erro
+    ) {
+        runOnUiThread(() -> {
+            String js = "window.receberResultadoOCR(" +
+                org.json.JSONObject.quote(codigo) + "," +
+                org.json.JSONObject.quote(erro) + ");";
+
+            webView.evaluateJavascript(js, null);
+        });
+    }
+
     @Override
     public void onBackPressed() {
-
-        String url = webView.getUrl();
-
-        if (url != null && !url.equals(HOME_URL)) {
-
+        if (webView != null) {
             webView.loadUrl(HOME_URL);
-
         } else {
-
-            webView.evaluateJavascript(
-                "if(typeof voltarInicio === 'function')" +
-                "{voltarInicio();}",
-                null
-            );
+            super.onBackPressed();
         }
     }
 
     @Override
     protected void onDestroy() {
-
-        if (cameraRequest != null) {
-            cameraRequest.deny();
-            cameraRequest = null;
-        }
-
         if (webView != null) {
             webView.destroy();
         }
