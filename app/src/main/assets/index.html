@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>DAROÇA Entregas</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: #f3e7d3;
+    color: #5b402d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 430px;
+    background: #fffdf9;
+    border-radius: 22px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 6px 25px rgba(0,0,0,.12);
+}
+
+.logo {
+    font-size: 36px;
+    font-weight: 900;
+    color: #65452e;
+    margin-bottom: 5px;
+}
+
+.subtitulo {
+    font-size: 15px;
+    color: #8b7560;
+    margin-bottom: 25px;
+}
+
+button {
+    width: 100%;
+    border: none;
+    border-radius: 13px;
+    padding: 18px;
+    margin: 7px 0;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.ifood {
+    background: #ea1d2c;
+}
+
+.food99 {
+    background: #edaa19;
+    color: #382900;
+}
+
+.verde {
+    background: #287b48;
+}
+
+.marrom {
+    background: #6b4f35;
+}
+
+.cinza {
+    background: #777;
+}
+
+video {
+    width: 100%;
+    border-radius: 13px;
+    background: #222;
+    margin: 15px 0;
+    max-height: 350px;
+    object-fit: cover;
+}
+
+input {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #d5c3af;
+    border-radius: 12px;
+    font-size: 28px;
+    text-align: center;
+    letter-spacing: 3px;
+    margin: 15px 0;
+}
+
+#cameraArea,
+#resultadoArea {
+    display: none;
+}
+
+#aviso {
+    margin-top: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #795d45;
+}
+
+.dica {
+    font-size: 13px;
+    color: #8a7764;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">DAROÇA</div>
+
+    <div class="subtitulo">
+        Confirmação de Entregas
+    </div>
+
+    <!-- TELA INICIAL -->
+
+    <div id="inicio">
+
+        <button class="ifood"
+        onclick="iniciarLeitura('ifood')">
+            📷 LER iFood
+        </button>
+
+        <button class="food99"
+        onclick="iniciarLeitura('99')">
+            📷 LER 99Food
+        </button>
+
+        <p class="dica">
+            Selecione a plataforma e aponte
+            a câmera para a notinha.
+        </p>
+
+    </div>
+
+    <!-- TELA DA CÂMERA -->
+
+    <div id="cameraArea">
+
+        <h2 id="tituloCamera">
+            Ler localizador
+        </h2>
+
+        <video
+            id="video"
+            autoplay
+            playsinline
+            muted>
+        </video>
+
+        <button class="verde"
+        onclick="capturarLocalizador()">
+            IDENTIFICAR LOCALIZADOR
+        </button>
+
+        <button class="cinza"
+        onclick="digitarManual()">
+            DIGITAR MANUALMENTE
+        </button>
+
+        <button class="marrom"
+        onclick="voltarInicio()">
+            VOLTAR
+        </button>
+
+    </div>
+
+    <!-- RESULTADO -->
+
+    <div id="resultadoArea">
+
+        <h2>
+            Localizador identificado
+        </h2>
+
+        <p class="dica">
+            Confira os 8 números antes
+            de continuar.
+        </p>
+
+        <input
+            id="codigo"
+            type="text"
+            inputmode="numeric"
+            maxlength="8"
+            placeholder="00000000"
+            autocomplete="off">
+
+        <button class="verde"
+        onclick="abrirConfirmacao()">
+            ABRIR CONFIRMAÇÃO
+        </button>
+
+        <button class="marrom"
+        onclick="voltarInicio()">
+            NOVA LEITURA
+        </button>
+
+    </div>
+
+    <div id="aviso"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+
+let plataforma = "";
+let cameraStream = null;
+let processando = false;
+
+const inicio =
+    document.getElementById("inicio");
+
+const cameraArea =
+    document.getElementById("cameraArea");
+
+const resultadoArea =
+    document.getElementById("resultadoArea");
+
+const video =
+    document.getElementById("video");
+
+const codigoInput =
+    document.getElementById("codigo");
+
+const aviso =
+    document.getElementById("aviso");
+
+function mensagem(texto) {
+    aviso.textContent = texto;
+}
+
+async function iniciarLeitura(tipo) {
+
+    pararCamera();
+
+    plataforma = tipo;
+
+    inicio.style.display = "none";
+    resultadoArea.style.display = "none";
+    cameraArea.style.display = "block";
+
+    document.getElementById(
+        "tituloCamera"
+    ).textContent =
+        tipo === "ifood"
+        ? "Leitura iFood"
+        : "Leitura 99Food";
+
+    mensagem("Abrindo câmera...");
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+
+        mensagem(
+            "Câmera indisponível nesta versão. " +
+            "Utilize a digitação manual."
+        );
+
+        return;
+    }
+
+    try {
+
+        cameraStream =
+            await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    facingMode: {
+                        ideal: "environment"
+                    }
+                }
+            });
+
+        video.srcObject = cameraStream;
+
+        await video.play();
+
+        mensagem(
+            "Aponte para a palavra LOCALIZADOR " +
+            "e os 8 números da notinha."
+        );
+
+    } catch (erro) {
+
+        mensagem(
+            "Não foi possível abrir a câmera. " +
+            "Verifique a permissão do Android."
+        );
+
+    }
+}
+
+function pararCamera() {
+
+    if (cameraStream) {
+
+        cameraStream.getTracks().forEach(
+            track => track.stop()
+        );
+
+        cameraStream = null;
+    }
+
+    video.srcObject = null;
+}
+
+function extrairLocalizador(texto) {
+
+    const linhas = texto
+        .toUpperCase()
+        .replace(/\r/g, "")
+        .split("\n");
+
+    for (let i = 0; i < linhas.length; i++) {
+
+        if (
+            linhas[i].includes("LOCALIZADOR")
+        ) {
+
+            const trecho = linhas
+                .slice(i, i + 3)
+                .join(" ");
+
+            const resultado = trecho.match(
+                /LOCALIZADOR[\s:.-]*([0-9][0-9\s.-]{6,18}[0-9])/
+            );
+
+            if (resultado) {
+
+                const numeros =
+                    resultado[1].replace(/\D/g, "");
+
+                if (numeros.length === 8) {
+                    return numeros;
+                }
+            }
+        }
+    }
+
+    return "";
+}
+
+async function capturarLocalizador() {
+
+    if (processando) {
+        return;
+    }
+
+    if (!cameraStream ||
+        video.videoWidth === 0) {
+
+        mensagem(
+            "A câmera ainda não está pronta."
+        );
+
+        return;
+    }
+
+    processando = true;
+
+    mensagem(
+        "Lendo a notinha. Aguarde..."
+    );
+
+    try {
+
+        if (typeof Tesseract === "undefined") {
+            throw new Error("OCR não carregado");
+        }
+
+        const canvas =
+            document.createElement("canvas");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const contexto =
+            canvas.getContext("2d");
+
+        contexto.drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        const resultado =
+            await Tesseract.recognize(
+                canvas,
+                "por"
+            );
+
+        const codigo =
+            extrairLocalizador(
+                resultado.data.text
+            );
+
+        if (codigo) {
+
+            mostrarResultado(codigo);
+
+            mensagem(
+                "Localizador encontrado! " +
+                "Confira os números."
+            );
+
+        } else {
+
+            mensagem(
+                "Não encontrei o localizador. " +
+                "Aproxime a câmera e tente novamente."
+            );
+
+        }
+
+    } catch (erro) {
+
+        mensagem(
+            "Erro na leitura. Verifique a internet " +
+            "ou utilize a digitação manual."
+        );
+
+    } finally {
+
+        processando = false;
+
+    }
+}
+
+function mostrarResultado(codigo) {
+
+    pararCamera();
+
+    cameraArea.style.display = "none";
+
+    resultadoArea.style.display = "block";
+
+    codigoInput.value = codigo;
+}
+
+function digitarManual() {
+
+    mostrarResultado("");
+
+    mensagem(
+        "Digite os 8 números do localizador."
+    );
+
+    codigoInput.focus();
+}
+
+function abrirConfirmacao() {
+
+    const codigo =
+        codigoInput.value.replace(/\D/g, "");
+
+    if (codigo.length !== 8) {
+
+        mensagem(
+            "Digite exatamente 8 números."
+        );
+
+        return;
+    }
+
+    mensagem(
+        "Localizador " + codigo +
+        " identificado para " +
+        (plataforma === "ifood"
+            ? "iFood"
+            : "99Food") +
+        ". A integração com a confirmação " +
+        "será feita na próxima atualização."
+    );
+}
+
+function voltarInicio() {
+
+    pararCamera();
+
+    plataforma = "";
+
+    codigoInput.value = "";
+
+    inicio.style.display = "block";
+
+    cameraArea.style.display = "none";
+
+    resultadoArea.style.display = "none";
+
+    mensagem("");
+}
+
+codigoInput.addEventListener(
+    "input",
+    function() {
+
+        this.value =
+            this.value.replace(/\D/g, "")
+            .slice(0, 8);
+
+    }
+);
+
+</script>
+
+</body>
+</html>
