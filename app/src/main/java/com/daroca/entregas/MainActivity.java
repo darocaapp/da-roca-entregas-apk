@@ -29,6 +29,8 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -107,16 +109,16 @@ public class MainActivity extends Activity {
                 if ("ifood".equals(plataforma)
                         && url != null
                         && url.startsWith(
-                            "https://confirmacao-entrega-propria.ifood.com.br/"
-                        )) {
+                        "https://confirmacao-entrega-propria.ifood.com.br/"
+                )) {
                     iniciarTentativasPreenchimento(orderCode);
                 }
 
                 if ("99".equals(plataforma)
                         && url != null
                         && url.startsWith(
-                            "https://food-b-h5.99app.com/"
-                        )) {
+                        "https://food-b-h5.99app.com/"
+                )) {
                     iniciarTentativasPreenchimento(orderCode);
                 }
             }
@@ -165,7 +167,7 @@ public class MainActivity extends Activity {
                     } else {
                         request.grant(
                                 new String[]{
-                                    PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                                        PermissionRequest.RESOURCE_VIDEO_CAPTURE
                                 }
                         );
                     }
@@ -197,7 +199,7 @@ public class MainActivity extends Activity {
 
                 cameraRequest.grant(
                         new String[]{
-                            PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                                PermissionRequest.RESOURCE_VIDEO_CAPTURE
                         }
                 );
             } else {
@@ -212,15 +214,8 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void reconhecerImagem(String base64) {
-
-            // A ponte de câmera só deve ser usada na tela local.
             runOnUiThread(() -> {
-                if (webView == null
-                        || webView.getUrl() == null
-                        || !webView.getUrl().startsWith(HOME_URL)) {
-                    return;
-                }
-
+                if (!estaNaTelaInicial()) return;
                 processarImagem(base64);
             });
         }
@@ -232,11 +227,7 @@ public class MainActivity extends Activity {
         ) {
             runOnUiThread(() -> {
 
-                if (webView == null
-                        || webView.getUrl() == null
-                        || !webView.getUrl().startsWith(HOME_URL)) {
-                    return;
-                }
+                if (!estaNaTelaInicial()) return;
 
                 String numero = digitsOnly(codigo);
 
@@ -253,7 +244,6 @@ public class MainActivity extends Activity {
 
                 handler.removeCallbacksAndMessages(null);
 
-                // Remove a ponte antes de abrir sites externos.
                 webView.removeJavascriptInterface("DaRocaAndroid");
 
                 if ("ifood".equals(tipo)) {
@@ -265,8 +255,13 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void processarImagem(String base64) {
+    private boolean estaNaTelaInicial() {
+        return webView != null
+                && webView.getUrl() != null
+                && webView.getUrl().startsWith(HOME_URL);
+    }
 
+    private void processarImagem(String base64) {
         try {
             String imagemLimpa = base64.replaceFirst(
                     "^data:image/[^;]+;base64,",
@@ -297,6 +292,7 @@ public class MainActivity extends Activity {
 
             recognizer.process(imagem)
                     .addOnSuccessListener(resultado -> {
+
                         String texto = resultado.getText();
                         String codigo = encontrarLocalizador(texto);
 
@@ -305,18 +301,19 @@ public class MainActivity extends Activity {
                         } else {
                             enviarResultado(
                                     "",
-                                    texto == null || texto.trim().isEmpty()
+                                    texto == null
+                                            || texto.trim().isEmpty()
                                             ? "Nenhum texto reconhecido."
                                             : texto
                             );
                         }
                     })
-                    .addOnFailureListener(erro -> {
-                        enviarResultado(
-                                "",
-                                "Erro: " + erro.getMessage()
-                        );
-                    });
+                    .addOnFailureListener(erro ->
+                            enviarResultado(
+                                    "",
+                                    "Erro: " + erro.getMessage()
+                            )
+                    );
 
         } catch (Exception erro) {
             enviarResultado(
@@ -338,89 +335,227 @@ public class MainActivity extends Activity {
 
         String[] linhas = normalizado.split("\n");
 
-        Pattern palavraLocalizador = Pattern.compile(
+        // Primeiro: leitura tradicional, preservando
+        // o comportamento das comandas impressas.
+        String codigo = buscaTradicional(linhas);
+
+        if (!codigo.isEmpty()) {
+            return codigo;
+        }
+
+        // Segundo: leitura tolerante a erros de OCR
+        // na palavra LOCALIZADOR.
+        return buscaFlexivel(linhas);
+    }
+
+    private String buscaTradicional(String[] linhas) {
+
+        Pattern palavra = Pattern.compile(
                 "LOCAL[I1L]ZADOR"
         );
 
-        Pattern numeros = Pattern.compile("\\d+");
-
         for (int i = 0; i < linhas.length; i++) {
 
-            Matcher palavra =
-                    palavraLocalizador.matcher(linhas[i]);
+            Matcher encontrado = palavra.matcher(linhas[i]);
 
-            if (!palavra.find()) continue;
+            if (!encontrado.find()) continue;
 
-            StringBuilder acumulado = new StringBuilder();
+            String codigo = procurarNumerosProximos(
+                    linhas,
+                    i,
+                    encontrado.end(),
+                    false
+            );
 
-            String restante =
-                    linhas[i].substring(palavra.end());
-
-            juntarNumeros(restante, acumulado, numeros);
-
-            if (acumulado.length() == 8) {
-                return acumulado.toString();
-            }
-
-            for (int j = i + 1;
-                    j <= i + 2 && j < linhas.length;
-                    j++) {
-
-                juntarNumeros(
-                        linhas[j],
-                        acumulado,
-                        numeros
-                );
-
-                if (acumulado.length() == 8) {
-                    return acumulado.toString();
-                }
-
-                if (acumulado.length() > 8) break;
+            if (!codigo.isEmpty()) {
+                return codigo;
             }
         }
 
         return "";
     }
 
-    private void juntarNumeros(
-            String trecho,
-            StringBuilder acumulado,
-            Pattern padrao
+    private String buscaFlexivel(String[] linhas) {
+
+        for (int i = 0; i < linhas.length; i++) {
+
+            String linha = linhas[i];
+
+            // Normaliza confusões comuns de OCR.
+            String comparacao = linha
+                    .replace('0', 'O')
+                    .replace('1', 'I')
+                    .replace('5', 'S')
+                    .replace('8', 'B')
+                    .replaceAll("[^A-Z]", "");
+
+            String alvo = "LOCALIZADOR";
+
+            if (comparacao.contains(alvo)
+                    || contemPalavraParecida(comparacao, alvo)) {
+
+                String codigo = procurarNumerosProximos(
+                        linhas,
+                        i,
+                        0,
+                        true
+                );
+
+                if (!codigo.isEmpty()) {
+                    return codigo;
+                }
+            }
+        }
+
+        return "";
+    }
+
+    private boolean contemPalavraParecida(
+            String texto,
+            String alvo
     ) {
-        Matcher matcher = padrao.matcher(trecho);
 
-        while (matcher.find()) {
-            String grupo = matcher.group();
+        if (texto.length() < alvo.length() - 1) {
+            return false;
+        }
 
-            if (acumulado.length() + grupo.length() > 8) {
-                return;
+        int menor = alvo.length() - 1;
+        int maior = alvo.length() + 1;
+
+        for (int tamanho = menor;
+             tamanho <= maior;
+             tamanho++) {
+
+            for (int inicio = 0;
+                 inicio + tamanho <= texto.length();
+                 inicio++) {
+
+                String trecho = texto.substring(
+                        inicio,
+                        inicio + tamanho
+                );
+
+                if (distanciaEdicao(trecho, alvo) <= 1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private int distanciaEdicao(
+            String a,
+            String b
+    ) {
+
+        int[][] dp = new int[a.length() + 1][b.length() + 1];
+
+        for (int i = 0; i <= a.length(); i++) {
+            dp[i][0] = i;
+        }
+
+        for (int j = 0; j <= b.length(); j++) {
+            dp[0][j] = j;
+        }
+
+        for (int i = 1; i <= a.length(); i++) {
+            for (int j = 1; j <= b.length(); j++) {
+
+                int custo =
+                        a.charAt(i - 1) == b.charAt(j - 1)
+                                ? 0
+                                : 1;
+
+                dp[i][j] = Math.min(
+                        Math.min(
+                                dp[i - 1][j] + 1,
+                                dp[i][j - 1] + 1
+                        ),
+                        dp[i - 1][j - 1] + custo
+                );
+            }
+        }
+
+        return dp[a.length()][b.length()];
+    }
+
+    private String procurarNumerosProximos(
+            String[] linhas,
+            int linhaInicial,
+            int posicaoInicial,
+            boolean flexivel
+    ) {
+
+        List<String> candidatos = new ArrayList<>();
+
+        String primeiraLinha = linhas[linhaInicial];
+
+        if (!flexivel
+                && posicaoInicial < primeiraLinha.length()) {
+
+            candidatos.add(
+                    primeiraLinha.substring(posicaoInicial)
+            );
+
+        } else if (flexivel) {
+
+            // Na leitura flexível, só considera
+            // a linha do título se houver separador.
+            int separador = primeiraLinha.indexOf(':');
+
+            if (separador >= 0) {
+                candidatos.add(
+                        primeiraLinha.substring(separador + 1)
+                );
+            }
+        }
+
+        for (int j = linhaInicial + 1;
+             j <= linhaInicial + 2
+                     && j < linhas.length;
+             j++) {
+
+            candidatos.add(linhas[j]);
+        }
+
+        StringBuilder acumulado = new StringBuilder();
+
+        for (String trecho : candidatos) {
+
+            String numeros = trecho.replaceAll("\\D", "");
+
+            if (numeros.isEmpty()) continue;
+
+            if (acumulado.length() + numeros.length() > 8) {
+                break;
             }
 
-            acumulado.append(grupo);
+            acumulado.append(numeros);
 
-            if (acumulado.length() == 8) return;
+            if (acumulado.length() == 8) {
+                return acumulado.toString();
+            }
         }
+
+        return "";
     }
 
     private void enviarResultado(
             String codigo,
             String diagnostico
     ) {
+
         runOnUiThread(() -> {
 
-            if (webView == null
-                    || webView.getUrl() == null
-                    || !webView.getUrl().startsWith(HOME_URL)) {
-                return;
-            }
+            if (!estaNaTelaInicial()) return;
 
             String javascript =
                     "window.receberResultadoOCR(" +
-                    JSONObject.quote(codigo) +
-                    "," +
-                    JSONObject.quote(diagnostico) +
-                    ");";
+                            JSONObject.quote(codigo) +
+                            "," +
+                            JSONObject.quote(diagnostico) +
+                            ");";
 
             webView.evaluateJavascript(javascript, null);
         });
@@ -434,10 +569,12 @@ public class MainActivity extends Activity {
     private void iniciarTentativasPreenchimento(
             String codigo
     ) {
+
         handler.removeCallbacksAndMessages(null);
         preenchido = false;
 
         for (int i = 0; i <= 20; i++) {
+
             handler.postDelayed(
                     () -> preencherCodigo(codigo),
                     i * 500L
@@ -457,9 +594,11 @@ public class MainActivity extends Activity {
         String seletor;
 
         if ("ifood".equals(plataforma)) {
-            seletor = "[data-testid^=\"order-number-input-\"]";
+            seletor =
+                    "[data-testid^=\"order-number-input-\"]";
         } else if ("99".equals(plataforma)) {
-            seletor = ".verification-code-input input";
+            seletor =
+                    ".verification-code-input input";
         } else {
             return;
         }
@@ -516,7 +655,6 @@ public class MainActivity extends Activity {
 
         if (webView != null) {
 
-            // Restaura a ponte apenas para a página local.
             webView.addJavascriptInterface(
                     new AndroidBridge(),
                     "DaRocaAndroid"
