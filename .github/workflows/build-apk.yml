@@ -1,3 +1,4 @@
+
 name: Gerar APK Da Roca Entregas
 
 on:
@@ -24,10 +25,27 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Verificar AndroidManifest
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          arquivo = "app/src/main/AndroidManifest.xml"
+
+          try:
+              ET.parse(arquivo)
+              print("AndroidManifest.xml: XML valido!")
+          except ET.ParseError as erro:
+              print("ERRO NO ANDROIDMANIFEST:")
+              print(erro)
+              raise SystemExit(1)
+          PY
+
       - name: Gerar APK
-        run: gradle assembleDebug
+        run: gradle assembleDebug --stacktrace --info
 
       - name: Salvar APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Da-Roca-Entregas-APK
