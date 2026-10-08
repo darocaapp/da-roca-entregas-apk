@@ -5,348 +5,504 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DAROÇA Entregas 3.2</title>
+
 <style>
-* { box-sizing: border-box; }
+:root {
+  --marrom: #593c2c;
+  --bege: #f5ecdc;
+  --verde: #347b4a;
+  --vermelho: #e53935;
+  --amarelo: #efad26;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  padding: 18px;
-  background: #f4eadc;
-  color: #493224;
+  padding: 20px;
+  background: var(--bege);
+  color: var(--marrom);
   font-family: Arial, sans-serif;
 }
-.container { max-width: 520px; margin: auto; }
-header { text-align: center; margin: 20px 0 28px; }
-h1 { font-size: 36px; margin: 0; color: #593b27; }
-.subtitle { font-size: 14px; margin-top: 6px; color: #80664e; }
-.card {
-  background: #fffaf3;
-  padding: 20px;
-  border-radius: 18px;
-  box-shadow: 0 5px 18px rgba(0,0,0,.08);
-  margin-bottom: 18px;
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
 }
-h2 { font-size: 21px; margin-top: 0; }
+
+header {
+  text-align: center;
+  margin: 20px 0 28px;
+}
+
+.logo {
+  font-size: 39px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.subtitulo {
+  margin-top: 7px;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px #00000012;
+}
+
+h2 {
+  text-align: center;
+  font-size: 19px;
+  margin: 0 0 20px;
+}
+
 button {
   width: 100%;
-  padding: 17px;
-  margin: 8px 0;
   border: 0;
   border-radius: 12px;
-  font-size: 17px;
+  padding: 18px 12px;
+  margin-bottom: 13px;
+  font-size: 18px;
   font-weight: bold;
   cursor: pointer;
 }
-.ifood { background: #e52b35; color: white; }
-.food99 { background: #ffb900; color: #322200; }
-.cinza { background: #e8ded0; color: #493224; }
-input {
-  width: 100%;
-  padding: 17px;
-  font-size: 27px;
-  text-align: center;
-  letter-spacing: 3px;
-  border: 2px solid #cdb89e;
-  border-radius: 12px;
-  background: white;
+
+.ifood {
+  background: var(--vermelho);
+  color: white;
 }
+
+.food99 {
+  background: var(--amarelo);
+  color: #332719;
+}
+
+.voltar {
+  background: var(--marrom);
+  color: white;
+  margin-top: 12px;
+}
+
+#leitor {
+  display: none;
+}
+
 .camera-box {
+  width: 100%;
   position: relative;
-  width: 100%;
-  overflow: hidden;
   background: #171717;
-  border-radius: 14px;
-  margin: 15px 0;
+  border-radius: 15px;
+  overflow: hidden;
 }
+
 video {
-  display: block;
   width: 100%;
-  height: 310px;
+  display: block;
+  min-height: 240px;
+  max-height: 420px;
   object-fit: cover;
 }
+
 .mira {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 88%;
-  height: 105px;
-  border: 2px solid #64f59c;
-  border-radius: 10px;
+  left: 8%;
+  right: 8%;
+  top: 34%;
+  height: 32%;
+  border: 3px solid #72e79a;
+  border-radius: 12px;
   pointer-events: none;
-  box-shadow: 0 0 0 100vmax rgba(0,0,0,.12);
 }
+
 .status {
-  padding: 13px;
-  border-radius: 10px;
-  background: #eee3d4;
-  font-size: 14px;
   text-align: center;
-  margin: 12px 0;
+  margin: 15px 0;
+  font-size: 15px;
+  font-weight: bold;
   line-height: 1.5;
 }
-.sucesso { background: #d9f2df; color: #205a32; }
-.erro { background: #ffe0dd; color: #8a2922; }
-.hidden { display: none !important; }
-small { color: #80664e; }
+
+input {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #d7c6ae;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 27px;
+  letter-spacing: 5px;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--verde);
+}
+
+.legenda {
+  text-align: center;
+  font-size: 13px;
+  color: #766b60;
+  margin: 10px 0 15px;
+  line-height: 1.5;
+}
+
+.oculto {
+  display: none;
+}
+
+footer {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 12px;
+  opacity: 0.65;
+}
 </style>
 </head>
+
 <body>
 
 <div class="container">
+
   <header>
-    <h1>DAROÇA</h1>
-    <div class="subtitle">ENTREGAS • LEITOR INTELIGENTE 3.2</div>
+    <div class="logo">DAROÇA</div>
+    <div class="subtitulo">
+      ENTREGAS • LEITOR INTELIGENTE 3.2
+    </div>
   </header>
 
   <section id="inicio" class="card">
-    <h2>Escolha a plataforma</h2>
-    <button class="ifood" onclick="abrirLeitor('ifood')">LER iFood</button>
-    <button class="food99" onclick="abrirLeitor('99')">LER 99Food</button>
-    <p>Aponte a câmera para o localizador impresso na comanda.</p>
+    <h2>Selecione a plataforma</h2>
+
+    <button class="ifood" onclick="iniciar('ifood')">
+      📷 LER iFood
+    </button>
+
+    <button class="food99" onclick="iniciar('99')">
+      📷 LER 99Food
+    </button>
+
+    <p class="legenda">
+      Aponte a câmera para o LOCALIZADOR da comanda.
+      A leitura será feita automaticamente.
+    </p>
   </section>
 
-  <section id="leitor" class="card hidden">
-    <h2 id="tituloPlataforma">Leitor</h2>
+  <section id="leitor" class="card">
+
+    <h2 id="tituloLeitor">Leitura automática</h2>
 
     <div class="camera-box">
-      <video id="camera" autoplay muted playsinline></video>
+      <video id="video" autoplay playsinline muted></video>
       <div class="mira"></div>
     </div>
 
-    <div id="status" class="status">Preparando câmera...</div>
+    <div id="status" class="status">
+      Iniciando câmera...
+    </div>
 
-    <h2>Localizador</h2>
+    <p class="legenda">
+      Posicione a palavra LOCALIZADOR e os
+      8 números dentro da área verde.
+    </p>
+
     <input
-      id="codigo"
+      id="codigoManual"
       type="text"
       inputmode="numeric"
       maxlength="8"
-      placeholder="8 números"
+      placeholder="00000000"
       autocomplete="off"
-      oninput="codigoDigitado(this)"
+      oninput="verificarManual()"
     >
 
-    <small>Se necessário, digite os oito números. O aplicativo continuará automaticamente.</small>
+    <p class="legenda">
+      Se a câmera não reconhecer, digite os 8 números.
+      O aplicativo continuará automaticamente.
+    </p>
 
-    <button class="cinza" onclick="voltarInicio()">VOLTAR</button>
+    <button class="voltar" onclick="voltar()">
+      ← VOLTAR
+    </button>
+
   </section>
+
+  <footer>
+    DAROÇA RESTAURANTE • VERSÃO 3.2
+  </footer>
+
 </div>
 
-<canvas id="captura" class="hidden"></canvas>
+<canvas id="canvas" class="oculto"></canvas>
 
 <script>
-const camera = document.getElementById("camera");
-const captura = document.getElementById("captura");
-const codigoInput = document.getElementById("codigo");
-const statusBox = document.getElementById("status");
-
 let plataforma = "";
-let stream = null;
-let temporizador = null;
-let respostaTimeout = null;
-let digitacaoTimeout = null;
+let camera = null;
+let intervalo = null;
 let processando = false;
-let codigoEncontrado = false;
+let finalizado = false;
 let sessao = 0;
-let requisicao = 0;
-let requisicaoPendente = 0;
+let temporizadorManual = null;
 
-function mostrarStatus(mensagem, tipo = "") {
-  statusBox.textContent = mensagem;
-  statusBox.className = "status";
-  if (tipo) statusBox.classList.add(tipo);
+const inicio = document.getElementById("inicio");
+const leitor = document.getElementById("leitor");
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const statusLeitura = document.getElementById("status");
+const codigoManual = document.getElementById("codigoManual");
+const tituloLeitor = document.getElementById("tituloLeitor");
+
+function atualizarStatus(mensagem) {
+  statusLeitura.textContent = mensagem;
 }
 
-function codigoDigitado(campo) {
-  campo.value = campo.value.replace(/\D/g, "").slice(0, 8);
-  clearTimeout(digitacaoTimeout);
-
-  if (campo.value.length === 8) {
-    digitacaoTimeout = setTimeout(() => {
-      finalizarCodigo(campo.value);
-    }, 350);
-  }
+function somenteNumeros(valor) {
+  return String(valor || "").replace(/\D/g, "");
 }
 
-async function abrirLeitor(tipo) {
-  await pararCamera();
+async function iniciar(tipo) {
+  pararCamera();
+  clearTimeout(temporizadorManual);
+
   sessao++;
-  const minhaSessao = sessao;
+  const sessaoAtual = sessao;
 
   plataforma = tipo;
-  codigoEncontrado = false;
+  finalizado = false;
   processando = false;
-  requisicaoPendente = 0;
-  codigoInput.value = "";
 
-  document.getElementById("inicio").classList.add("hidden");
-  document.getElementById("leitor").classList.remove("hidden");
-  document.getElementById("tituloPlataforma").textContent =
-    tipo === "ifood" ? "Leitor iFood" : "Leitor 99Food";
+  codigoManual.value = "";
 
-  mostrarStatus("Solicitando câmera...");
+  inicio.style.display = "none";
+  leitor.style.display = "block";
 
-  try {
-    const novoStream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
-      }
-    });
+  tituloLeitor.textContent =
+    tipo === "ifood"
+      ? "Leitura automática • iFood"
+      : "Leitura automática • 99Food";
 
-    if (minhaSessao !== sessao) {
-      novoStream.getTracks().forEach(track => track.stop());
-      return;
-    }
+  atualizarStatus("Abrindo câmera...");
 
-    stream = novoStream;
-    camera.srcObject = stream;
-    await camera.play();
-
-    if (minhaSessao !== sessao) return;
-
-    mostrarStatus("Procurando LOCALIZADOR automaticamente...");
-
-    // Inicia imediatamente, sem precisar apertar botão.
-    executarLeitura();
-
-    temporizador = setInterval(() => {
-      if (minhaSessao === sessao) executarLeitura();
-    }, 800);
-
-  } catch (erro) {
-    if (minhaSessao === sessao) {
-      mostrarStatus(
-        "Não foi possível abrir a câmera: " + erro.message,
-        "erro"
-      );
-    }
-  }
-}
-
-function executarLeitura() {
-  if (codigoEncontrado || processando || !stream) return;
-  if (camera.readyState < 2) return;
-
-  if (!window.DaRocaAndroid ||
-      !window.DaRocaAndroid.reconhecerImagem) {
-    mostrarStatus("Reconhecimento Android indisponível.", "erro");
+  if (!navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia) {
+    atualizarStatus(
+      "Câmera indisponível. Digite o código abaixo."
+    );
     return;
   }
 
-  const largura = camera.videoWidth;
-  const altura = camera.videoHeight;
-  if (!largura || !altura) return;
-
-  processando = true;
-  const minhaSessao = sessao;
-  const minhaRequisicao = ++requisicao;
-  requisicaoPendente = minhaRequisicao;
-
   try {
-    captura.width = largura;
-    captura.height = altura;
-    const contexto = captura.getContext("2d");
-    contexto.drawImage(camera, 0, 0, largura, altura);
-
-    const imagem = captura.toDataURL("image/jpeg", 0.90);
-
-    mostrarStatus("Analisando a comanda...");
-    window.DaRocaAndroid.reconhecerImagem(imagem);
-
-    // Permite novas tentativas se o Android não responder.
-    clearTimeout(respostaTimeout);
-    respostaTimeout = setTimeout(() => {
-      if (minhaSessao === sessao &&
-          minhaRequisicao === requisicaoPendente &&
-          !codigoEncontrado) {
-        processando = false;
-        mostrarStatus("Procurando LOCALIZADOR...");
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
       }
-    }, 4500);
+    });
+
+    if (sessaoAtual !== sessao || finalizado) {
+      stream.getTracks().forEach(track => track.stop());
+      return;
+    }
+
+    camera = stream;
+    video.srcObject = stream;
+
+    await video.play();
+
+    if (sessaoAtual !== sessao || finalizado) {
+      pararCamera();
+      return;
+    }
+
+    atualizarStatus(
+      "Procurando LOCALIZADOR automaticamente..."
+    );
+
+    intervalo = setInterval(() => {
+      capturarImagem(sessaoAtual);
+    }, 1100);
+
+    capturarImagem(sessaoAtual);
 
   } catch (erro) {
-    processando = false;
-    mostrarStatus("Erro na leitura: " + erro.message, "erro");
-  }
-}
+    if (sessaoAtual !== sessao) return;
 
-function receberResultadoOCR(numero, diagnostico) {
-  if (codigoEncontrado || !processando || !stream) return;
-
-  clearTimeout(respostaTimeout);
-  processando = false;
-
-  const codigo = String(numero || "").replace(/\D/g, "");
-
-  if (codigo.length === 8) {
-    finalizarCodigo(codigo);
-  } else {
-    mostrarStatus("Procurando LOCALIZADOR...");
-  }
-}
-
-async function finalizarCodigo(valor) {
-  if (codigoEncontrado) return;
-
-  const codigo = String(valor || "").replace(/\D/g, "");
-  if (codigo.length !== 8) return;
-
-  codigoEncontrado = true;
-  codigoInput.value = codigo;
-  mostrarStatus("Localizador encontrado: " + codigo, "sucesso");
-
-  if (navigator.vibrate) navigator.vibrate(120);
-
-  await pararCamera();
-
-  // O Java da próxima etapa fará a abertura e o preenchimento.
-  if (window.DaRocaAndroid &&
-      window.DaRocaAndroid.abrirConfirmacao) {
-    window.DaRocaAndroid.abrirConfirmacao(plataforma, codigo);
-  } else {
-    mostrarStatus(
-      "Código identificado: " + codigo +
-      ". A integração será ativada na próxima etapa.",
-      "sucesso"
+    atualizarStatus(
+      "Não foi possível abrir a câmera. " +
+      "Verifique a permissão ou digite o código."
     );
   }
 }
 
-async function pararCamera() {
-  clearInterval(temporizador);
-  clearTimeout(respostaTimeout);
-  clearTimeout(digitacaoTimeout);
-  temporizador = null;
-  respostaTimeout = null;
-  digitacaoTimeout = null;
-  processando = false;
-
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
+function capturarImagem(sessaoAtual) {
+  if (
+    finalizado ||
+    processando ||
+    sessaoAtual !== sessao ||
+    !camera ||
+    video.readyState < 2
+  ) {
+    return;
   }
 
-  camera.srcObject = null;
+  if (
+    !window.DaRocaAndroid ||
+    typeof window.DaRocaAndroid.reconhecerImagem !== "function"
+  ) {
+    atualizarStatus(
+      "Leitor Android indisponível. Digite o código."
+    );
+    pararCamera();
+    return;
+  }
+
+  try {
+    processando = true;
+
+    const largura = video.videoWidth;
+    const altura = video.videoHeight;
+
+    if (!largura || !altura) {
+      processando = false;
+      return;
+    }
+
+    const limite = 1280;
+    const escala = Math.min(1, limite / largura);
+
+    canvas.width = Math.round(largura * escala);
+    canvas.height = Math.round(altura * escala);
+
+    const contexto = canvas.getContext("2d");
+
+    contexto.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    const imagem = canvas.toDataURL("image/jpeg", 0.78);
+
+    window.DaRocaAndroid.reconhecerImagem(imagem);
+
+  } catch (erro) {
+    processando = false;
+    atualizarStatus("Tentando reconhecer a comanda...");
+  }
 }
 
-async function voltarInicio() {
+window.receberResultadoOCR = function(numero, diagnostico) {
+  processando = false;
+
+  if (finalizado || !plataforma) return;
+
+  const codigo = somenteNumeros(numero);
+
+  if (codigo.length === 8) {
+    codigoManual.value = codigo;
+    abrirConfirmacao(codigo);
+    return;
+  }
+
+  atualizarStatus(
+    "Procurando LOCALIZADOR... " +
+    "Mantenha a comanda firme e bem iluminada."
+  );
+};
+
+function verificarManual() {
+  codigoManual.value =
+    somenteNumeros(codigoManual.value).slice(0, 8);
+
+  clearTimeout(temporizadorManual);
+
+  if (codigoManual.value.length === 8) {
+    const codigo = codigoManual.value;
+
+    temporizadorManual = setTimeout(() => {
+      if (!finalizado && codigoManual.value === codigo) {
+        abrirConfirmacao(codigo);
+      }
+    }, 350);
+  }
+}
+
+function abrirConfirmacao(codigo) {
+  if (finalizado) return;
+
+  codigo = somenteNumeros(codigo);
+
+  if (codigo.length !== 8) return;
+
+  finalizado = true;
   sessao++;
-  codigoEncontrado = false;
-  requisicaoPendente = 0;
-  await pararCamera();
 
-  document.getElementById("leitor").classList.add("hidden");
-  document.getElementById("inicio").classList.remove("hidden");
+  clearTimeout(temporizadorManual);
+  pararCamera();
+
+  atualizarStatus("Código encontrado: " + codigo);
+
+  if (
+    window.DaRocaAndroid &&
+    typeof window.DaRocaAndroid.abrirConfirmacao === "function"
+  ) {
+    window.DaRocaAndroid.abrirConfirmacao(
+      plataforma,
+      codigo
+    );
+  } else {
+    finalizado = false;
+    atualizarStatus(
+      "Integração Android indisponível."
+    );
+  }
 }
 
-window.receberResultadoOCR = receberResultadoOCR;
+function pararCamera() {
+  if (intervalo !== null) {
+    clearInterval(intervalo);
+    intervalo = null;
+  }
+
+  if (camera) {
+    camera.getTracks().forEach(track => track.stop());
+    camera = null;
+  }
+
+  video.pause();
+  video.srcObject = null;
+  processando = false;
+}
+
+function voltar() {
+  sessao++;
+  finalizado = false;
+  plataforma = "";
+
+  clearTimeout(temporizadorManual);
+  pararCamera();
+
+  codigoManual.value = "";
+
+  leitor.style.display = "none";
+  inicio.style.display = "block";
+}
 
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) pararCamera();
+  if (document.hidden) {
+    pararCamera();
+  }
 });
 </script>
+
 </body>
 </html>
