@@ -1,107 +1,351 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Da Roça Entregas</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAROÇA Entregas</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3e7d3;
-            color: #5b402d;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        .box {
-            background: white;
-            padding: 35px;
-            border-radius: 18px;
-            width: 85%;
-            max-width: 420px;
-            box-shadow: 0 5px 20px rgba(0,0,0,.15);
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3e7d3;
+    color: #5b402d;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-        h1 {
-            margin-top: 0;
-            color: #6b4f35;
-        }
+.box {
+    background: #fffdf9;
+    padding: 25px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 430px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,.12);
+}
 
-        .codigo {
-            font-size: 30px;
-            font-weight: bold;
-            margin: 25px 0;
-        }
+h1 {
+    margin: 0;
+    color: #6b4f35;
+    font-size: 30px;
+}
 
-        button {
-            width: 100%;
-            padding: 17px;
-            border: 0;
-            border-radius: 12px;
-            background: #6b4f35;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.subtitulo {
+    color: #8a735f;
+    margin: 10px 0 25px;
+}
 
-        #aviso {
-            margin-top: 18px;
-            font-size: 14px;
-        }
-    </style>
+button {
+    width: 100%;
+    padding: 17px;
+    margin: 7px 0;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+}
+
+.ifood {
+    background: #ea1d2c;
+}
+
+.food99 {
+    background: #e89b16;
+}
+
+.verde {
+    background: #287a46;
+}
+
+.marrom {
+    background: #6b4f35;
+}
+
+.cinza {
+    background: #777;
+}
+
+input {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #d8c6b3;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 27px;
+    letter-spacing: 3px;
+    margin: 12px 0;
+}
+
+video {
+    width: 100%;
+    border-radius: 12px;
+    background: #222;
+    margin: 12px 0;
+}
+
+#cameraArea, #resultadoArea {
+    display: none;
+}
+
+#aviso {
+    font-size: 14px;
+    margin-top: 15px;
+    line-height: 1.5;
+}
+
+.plataforma {
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="box">
 
-    <h1>Da Roça Entregas</h1>
+    <h1>DAROÇA</h1>
+    <p class="subtitulo">Confirmação de Entregas</p>
 
-    <p>Confirmação de entrega iFood</p>
+    <div id="inicio">
+        <button class="ifood" onclick="iniciar('ifood')">
+            📷 LER iFood
+        </button>
 
-    <div class="codigo" id="codigo">--------</div>
-
-    <button onclick="abrirApp()">
-        Abrir confirmação
-    </button>
-
-    <div id="aviso">
-        Abrindo aplicativo Da Roça...
+        <button class="food99" onclick="iniciar('99')">
+            📷 LER 99Food
+        </button>
     </div>
+
+    <div id="cameraArea">
+        <div class="plataforma" id="plataformaTexto"></div>
+
+        <video id="video" autoplay playsinline muted></video>
+
+        <button class="verde" onclick="capturar()">
+            IDENTIFICAR LOCALIZADOR
+        </button>
+
+        <button class="cinza" onclick="mostrarManual()">
+            DIGITAR MANUALMENTE
+        </button>
+
+        <button class="marrom" onclick="voltarInicio()">
+            VOLTAR
+        </button>
+    </div>
+
+    <div id="resultadoArea">
+        <h3>Localizador do pedido</h3>
+
+        <input
+            id="codigo"
+            type="text"
+            inputmode="numeric"
+            maxlength="8"
+            placeholder="00000000"
+        >
+
+        <button class="verde" onclick="confirmar()">
+            ABRIR CONFIRMAÇÃO
+        </button>
+
+        <button class="marrom" onclick="voltarInicio()">
+            NOVA LEITURA
+        </button>
+    </div>
+
+    <div id="aviso"></div>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 <script>
-    const params = new URLSearchParams(window.location.search);
+let plataforma = "";
+let stream = null;
+let processando = false;
 
-    let codigo = params.get("codigo") || "";
+const inicio = document.getElementById("inicio");
+const cameraArea = document.getElementById("cameraArea");
+const resultadoArea = document.getElementById("resultadoArea");
+const video = document.getElementById("video");
+const codigoInput = document.getElementById("codigo");
+const aviso = document.getElementById("aviso");
 
-    codigo = codigo.replace(/\D/g, "");
+function mensagem(texto) {
+    aviso.textContent = texto;
+}
 
-    document.getElementById("codigo").textContent =
-        codigo || "Código não informado";
+async function iniciar(tipo) {
+    plataforma = tipo;
 
-    function abrirApp() {
+    inicio.style.display = "none";
+    resultadoArea.style.display = "none";
+    cameraArea.style.display = "block";
 
-        if (!codigo) {
-            document.getElementById("aviso").textContent =
-                "Código do pedido não informado.";
-            return;
+    document.getElementById("plataformaTexto").textContent =
+        tipo === "ifood" ? "Leitura iFood" : "Leitura 99Food";
+
+    mensagem("Abrindo câmera...");
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+                facingMode: { ideal: "environment" }
+            }
+        });
+
+        video.srcObject = stream;
+        await video.play();
+
+        mensagem("Aponte a câmera para o localizador da notinha.");
+    } catch (erro) {
+        mensagem("Não foi possível abrir a câmera. Verifique as permissões ou utilize a digitação manual.");
+    }
+}
+
+function pararCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+
+    video.srcObject = null;
+}
+
+function extrairLocalizador(texto) {
+    const normalizado = texto
+        .toUpperCase()
+        .replace(/\r/g, "")
+        .replace(/[ \t]+/g, " ");
+
+    const linhas = normalizado.split("\n");
+
+    for (let i = 0; i < linhas.length; i++) {
+        if (linhas[i].includes("LOCALIZADOR")) {
+            const trecho = linhas.slice(i, i + 3).join(" ");
+
+            const resultado = trecho.match(
+                /LOCALIZADOR[\s:.-]*([0-9][0-9\s.-]{6,18}[0-9])/
+            );
+
+            if (resultado) {
+                const numeros = resultado[1].replace(/\D/g, "");
+
+                if (numeros.length === 8) {
+                    return numeros;
+                }
+            }
+        }
+    }
+
+    return "";
+}
+
+async function capturar() {
+    if (processando) return;
+
+    if (!stream || video.videoWidth === 0) {
+        mensagem("A câmera ainda não está pronta.");
+        return;
+    }
+
+    processando = true;
+    mensagem("Identificando localizador. Aguarde...");
+
+    try {
+        if (typeof Tesseract === "undefined") {
+            throw new Error("OCR indisponível");
         }
 
-        window.location.href =
-            "daroca://ifood/" + codigo;
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
+
+        const resultado = await Tesseract.recognize(
+            canvas,
+            "por"
+        );
+
+        const codigo = extrairLocalizador(resultado.data.text);
+
+        if (codigo) {
+            mostrarResultado(codigo);
+            mensagem("Localizador identificado! Confira os números.");
+        } else {
+            mensagem("Não encontrei o localizador. Tente aproximar a câmera ou digite manualmente.");
+        }
+    } catch (erro) {
+        mensagem("Erro ao reconhecer o texto. Tente novamente ou digite manualmente.");
+    } finally {
+        processando = false;
+    }
+}
+
+function mostrarResultado(codigo) {
+    pararCamera();
+
+    cameraArea.style.display = "none";
+    resultadoArea.style.display = "block";
+
+    codigoInput.value = codigo;
+}
+
+function mostrarManual() {
+    mostrarResultado("");
+    mensagem("Digite os 8 números do localizador.");
+    codigoInput.focus();
+}
+
+function confirmar() {
+    const codigo = codigoInput.value.replace(/\D/g, "");
+
+    if (codigo.length !== 8) {
+        mensagem("O localizador precisa ter exatamente 8 números.");
+        return;
     }
 
-    if (codigo) {
-        setTimeout(abrirApp, 500);
-    }
+    mensagem(
+        "Código " + codigo +
+        " identificado para " +
+        (plataforma === "ifood" ? "iFood" : "99Food") +
+        ". A abertura automática será integrada na próxima etapa."
+    );
+}
+
+function voltarInicio() {
+    pararCamera();
+
+    inicio.style.display = "block";
+    cameraArea.style.display = "none";
+    resultadoArea.style.display = "none";
+
+    codigoInput.value = "";
+    plataforma = "";
+
+    mensagem("");
+}
+
+codigoInput.addEventListener("input", function() {
+    this.value = this.value.replace(/\D/g, "").slice(0, 8);
+});
 </script>
 
 </body>
