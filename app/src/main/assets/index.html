@@ -1,127 +1,166 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
-<title>DAROÇA Entregas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DAROÇA Entregas 3.2</title>
 
 <style>
+:root {
+  --marrom: #593c2c;
+  --bege: #f5ecdc;
+  --verde: #347b4a;
+  --vermelho: #e53935;
+  --amarelo: #efad26;
+}
+
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
-    font-family: Arial, sans-serif;
-    background: #f3e7d3;
-    color: #5b402d;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  margin: 0;
+  padding: 20px;
+  background: var(--bege);
+  color: var(--marrom);
+  font-family: Arial, sans-serif;
 }
 
 .container {
-    width: 100%;
-    max-width: 430px;
-    background: #fffdf9;
-    border-radius: 22px;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 6px 25px rgba(0,0,0,.12);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  margin: 20px 0 28px;
 }
 
 .logo {
-    font-size: 36px;
-    font-weight: 900;
-    color: #65452e;
-    margin-bottom: 5px;
+  font-size: 39px;
+  font-weight: 900;
+  letter-spacing: 1px;
 }
 
 .subtitulo {
-    font-size: 15px;
-    color: #8b7560;
-    margin-bottom: 25px;
+  margin-top: 7px;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
-button {
-    width: 100%;
-    border: none;
-    border-radius: 13px;
-    padding: 18px;
-    margin: 7px 0;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.ifood {
-    background: #ea1d2c;
-}
-
-.food99 {
-    background: #edaa19;
-    color: #382900;
-}
-
-.verde {
-    background: #287b48;
-}
-
-.marrom {
-    background: #6b4f35;
-}
-
-.cinza {
-    background: #777;
-}
-
-video {
-    width: 100%;
-    border-radius: 13px;
-    background: #222;
-    margin: 15px 0;
-    max-height: 350px;
-    object-fit: cover;
-}
-
-input {
-    width: 100%;
-    padding: 16px;
-    border: 2px solid #d5c3af;
-    border-radius: 12px;
-    font-size: 28px;
-    text-align: center;
-    letter-spacing: 3px;
-    margin: 15px 0;
-}
-
-#cameraArea,
-#resultadoArea {
-    display: none;
-}
-
-#aviso {
-    margin-top: 15px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #795d45;
-}
-
-.dica {
-    font-size: 13px;
-    color: #8a7764;
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px #00000012;
 }
 
 h2 {
-    font-size: 20px;
+  text-align: center;
+  font-size: 19px;
+  margin: 0 0 20px;
 }
 
+button {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 18px 12px;
+  margin-bottom: 13px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.ifood {
+  background: var(--vermelho);
+  color: white;
+}
+
+.food99 {
+  background: var(--amarelo);
+  color: #332719;
+}
+
+.voltar {
+  background: var(--marrom);
+  color: white;
+  margin-top: 12px;
+}
+
+#leitor {
+  display: none;
+}
+
+.camera-box {
+  width: 100%;
+  position: relative;
+  background: #171717;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+video {
+  width: 100%;
+  display: block;
+  min-height: 240px;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+.mira {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 34%;
+  height: 32%;
+  border: 3px solid #72e79a;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.status {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+input {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #d7c6ae;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 27px;
+  letter-spacing: 5px;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--verde);
+}
+
+.legenda {
+  text-align: center;
+  font-size: 13px;
+  color: #766b60;
+  margin: 10px 0 15px;
+  line-height: 1.5;
+}
+
+.oculto {
+  display: none;
+}
+
+footer {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 12px;
+  opacity: 0.65;
+}
 </style>
 </head>
 
@@ -129,406 +168,339 @@ h2 {
 
 <div class="container">
 
+  <header>
     <div class="logo">DAROÇA</div>
-
     <div class="subtitulo">
-        Confirmação de Entregas
+      ENTREGAS • LEITOR INTELIGENTE 3.2
+    </div>
+  </header>
+
+  <section id="inicio" class="card">
+    <h2>Selecione a plataforma</h2>
+
+    <button class="ifood" onclick="iniciar('ifood')">
+      📷 LER iFood
+    </button>
+
+    <button class="food99" onclick="iniciar('99')">
+      📷 LER 99Food
+    </button>
+
+    <p class="legenda">
+      Aponte a câmera para o LOCALIZADOR da comanda.
+      A leitura será feita automaticamente.
+    </p>
+  </section>
+
+  <section id="leitor" class="card">
+
+    <h2 id="tituloLeitor">Leitura automática</h2>
+
+    <div class="camera-box">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="mira"></div>
     </div>
 
-    <!-- TELA INICIAL -->
-
-    <div id="inicio">
-
-        <button class="ifood"
-        onclick="iniciarLeitura('ifood')">
-            📷 LER iFood
-        </button>
-
-        <button class="food99"
-        onclick="iniciarLeitura('99')">
-            📷 LER 99Food
-        </button>
-
-        <p class="dica">
-            Selecione a plataforma e aponte
-            a câmera para a notinha.
-        </p>
-
+    <div id="status" class="status">
+      Iniciando câmera...
     </div>
 
-    <!-- TELA DA CÂMERA -->
+    <p class="legenda">
+      Posicione a palavra LOCALIZADOR e os
+      8 números dentro da área verde.
+    </p>
 
-    <div id="cameraArea">
+    <input
+      id="codigoManual"
+      type="text"
+      inputmode="numeric"
+      maxlength="8"
+      placeholder="00000000"
+      autocomplete="off"
+      oninput="verificarManual()"
+    >
 
-        <h2 id="tituloCamera">
-            Ler localizador
-        </h2>
+    <p class="legenda">
+      Se a câmera não reconhecer, digite os 8 números.
+      O aplicativo continuará automaticamente.
+    </p>
 
-        <video
-            id="video"
-            autoplay
-            playsinline
-            muted>
-        </video>
+    <button class="voltar" onclick="voltar()">
+      ← VOLTAR
+    </button>
 
-        <button class="verde"
-        onclick="capturarLocalizador()">
-            IDENTIFICAR LOCALIZADOR
-        </button>
+  </section>
 
-        <button class="cinza"
-        onclick="digitarManual()">
-            DIGITAR MANUALMENTE
-        </button>
-
-        <button class="marrom"
-        onclick="voltarInicio()">
-            VOLTAR
-        </button>
-
-    </div>
-
-    <!-- RESULTADO -->
-
-    <div id="resultadoArea">
-
-        <h2>
-            Localizador identificado
-        </h2>
-
-        <p class="dica">
-            Confira os 8 números antes
-            de continuar.
-        </p>
-
-        <input
-            id="codigo"
-            type="text"
-            inputmode="numeric"
-            maxlength="8"
-            placeholder="00000000"
-            autocomplete="off">
-
-        <button class="verde"
-        onclick="abrirConfirmacao()">
-            ABRIR CONFIRMAÇÃO
-        </button>
-
-        <button class="marrom"
-        onclick="voltarInicio()">
-            NOVA LEITURA
-        </button>
-
-    </div>
-
-    <div id="aviso"></div>
+  <footer>
+    DAROÇA RESTAURANTE • VERSÃO 3.2
+  </footer>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<canvas id="canvas" class="oculto"></canvas>
 
 <script>
-
 let plataforma = "";
-let cameraStream = null;
+let camera = null;
+let intervalo = null;
 let processando = false;
+let finalizado = false;
+let sessao = 0;
+let temporizadorManual = null;
 
-const inicio =
-    document.getElementById("inicio");
+const inicio = document.getElementById("inicio");
+const leitor = document.getElementById("leitor");
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const statusLeitura = document.getElementById("status");
+const codigoManual = document.getElementById("codigoManual");
+const tituloLeitor = document.getElementById("tituloLeitor");
 
-const cameraArea =
-    document.getElementById("cameraArea");
-
-const resultadoArea =
-    document.getElementById("resultadoArea");
-
-const video =
-    document.getElementById("video");
-
-const codigoInput =
-    document.getElementById("codigo");
-
-const aviso =
-    document.getElementById("aviso");
-
-function mensagem(texto) {
-    aviso.textContent = texto;
+function atualizarStatus(mensagem) {
+  statusLeitura.textContent = mensagem;
 }
 
-async function iniciarLeitura(tipo) {
+function somenteNumeros(valor) {
+  return String(valor || "").replace(/\D/g, "");
+}
 
+async function iniciar(tipo) {
+  pararCamera();
+  clearTimeout(temporizadorManual);
+
+  sessao++;
+  const sessaoAtual = sessao;
+
+  plataforma = tipo;
+  finalizado = false;
+  processando = false;
+
+  codigoManual.value = "";
+
+  inicio.style.display = "none";
+  leitor.style.display = "block";
+
+  tituloLeitor.textContent =
+    tipo === "ifood"
+      ? "Leitura automática • iFood"
+      : "Leitura automática • 99Food";
+
+  atualizarStatus("Abrindo câmera...");
+
+  if (!navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia) {
+    atualizarStatus(
+      "Câmera indisponível. Digite o código abaixo."
+    );
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
+
+    if (sessaoAtual !== sessao || finalizado) {
+      stream.getTracks().forEach(track => track.stop());
+      return;
+    }
+
+    camera = stream;
+    video.srcObject = stream;
+
+    await video.play();
+
+    if (sessaoAtual !== sessao || finalizado) {
+      pararCamera();
+      return;
+    }
+
+    atualizarStatus(
+      "Procurando LOCALIZADOR automaticamente..."
+    );
+
+    intervalo = setInterval(() => {
+      capturarImagem(sessaoAtual);
+    }, 1100);
+
+    capturarImagem(sessaoAtual);
+
+  } catch (erro) {
+    if (sessaoAtual !== sessao) return;
+
+    atualizarStatus(
+      "Não foi possível abrir a câmera. " +
+      "Verifique a permissão ou digite o código."
+    );
+  }
+}
+
+function capturarImagem(sessaoAtual) {
+  if (
+    finalizado ||
+    processando ||
+    sessaoAtual !== sessao ||
+    !camera ||
+    video.readyState < 2
+  ) {
+    return;
+  }
+
+  if (
+    !window.DaRocaAndroid ||
+    typeof window.DaRocaAndroid.reconhecerImagem !== "function"
+  ) {
+    atualizarStatus(
+      "Leitor Android indisponível. Digite o código."
+    );
     pararCamera();
+    return;
+  }
 
-    plataforma = tipo;
+  try {
+    processando = true;
 
-    inicio.style.display = "none";
-    resultadoArea.style.display = "none";
-    cameraArea.style.display = "block";
+    const largura = video.videoWidth;
+    const altura = video.videoHeight;
 
-    document.getElementById(
-        "tituloCamera"
-    ).textContent =
-        tipo === "ifood"
-        ? "Leitura iFood"
-        : "Leitura 99Food";
-
-    mensagem("Abrindo câmera...");
-
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-
-        mensagem(
-            "Câmera indisponível nesta versão. " +
-            "Utilize a digitação manual."
-        );
-
-        return;
+    if (!largura || !altura) {
+      processando = false;
+      return;
     }
 
-    try {
+    const limite = 1280;
+    const escala = Math.min(1, limite / largura);
 
-        cameraStream =
-            await navigator.mediaDevices.getUserMedia({
-                audio: false,
-                video: {
-                    facingMode: {
-                        ideal: "environment"
-                    }
-                }
-            });
+    canvas.width = Math.round(largura * escala);
+    canvas.height = Math.round(altura * escala);
 
-        video.srcObject = cameraStream;
+    const contexto = canvas.getContext("2d");
 
-        await video.play();
+    contexto.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
 
-        mensagem(
-            "Aponte para a palavra LOCALIZADOR " +
-            "e os 8 números da notinha."
-        );
+    const imagem = canvas.toDataURL("image/jpeg", 0.78);
 
-    } catch (erro) {
+    window.DaRocaAndroid.reconhecerImagem(imagem);
 
-        mensagem(
-            "Não foi possível abrir a câmera. " +
-            "Verifique a permissão do Android."
-        );
+  } catch (erro) {
+    processando = false;
+    atualizarStatus("Tentando reconhecer a comanda...");
+  }
+}
 
-    }
+window.receberResultadoOCR = function(numero, diagnostico) {
+  processando = false;
+
+  if (finalizado || !plataforma) return;
+
+  const codigo = somenteNumeros(numero);
+
+  if (codigo.length === 8) {
+    codigoManual.value = codigo;
+    abrirConfirmacao(codigo);
+    return;
+  }
+
+  atualizarStatus(
+    "Procurando LOCALIZADOR... " +
+    "Mantenha a comanda firme e bem iluminada."
+  );
+};
+
+function verificarManual() {
+  codigoManual.value =
+    somenteNumeros(codigoManual.value).slice(0, 8);
+
+  clearTimeout(temporizadorManual);
+
+  if (codigoManual.value.length === 8) {
+    const codigo = codigoManual.value;
+
+    temporizadorManual = setTimeout(() => {
+      if (!finalizado && codigoManual.value === codigo) {
+        abrirConfirmacao(codigo);
+      }
+    }, 350);
+  }
+}
+
+function abrirConfirmacao(codigo) {
+  if (finalizado) return;
+
+  codigo = somenteNumeros(codigo);
+
+  if (codigo.length !== 8) return;
+
+  finalizado = true;
+  sessao++;
+
+  clearTimeout(temporizadorManual);
+  pararCamera();
+
+  atualizarStatus("Código encontrado: " + codigo);
+
+  if (
+    window.DaRocaAndroid &&
+    typeof window.DaRocaAndroid.abrirConfirmacao === "function"
+  ) {
+    window.DaRocaAndroid.abrirConfirmacao(
+      plataforma,
+      codigo
+    );
+  } else {
+    finalizado = false;
+    atualizarStatus(
+      "Integração Android indisponível."
+    );
+  }
 }
 
 function pararCamera() {
+  if (intervalo !== null) {
+    clearInterval(intervalo);
+    intervalo = null;
+  }
 
-    if (cameraStream) {
+  if (camera) {
+    camera.getTracks().forEach(track => track.stop());
+    camera = null;
+  }
 
-        cameraStream.getTracks().forEach(
-            track => track.stop()
-        );
-
-        cameraStream = null;
-    }
-
-    video.srcObject = null;
+  video.pause();
+  video.srcObject = null;
+  processando = false;
 }
 
-function extrairLocalizador(texto) {
+function voltar() {
+  sessao++;
+  finalizado = false;
+  plataforma = "";
 
-    const linhas = texto
-        .toUpperCase()
-        .replace(/\r/g, "")
-        .split("\n");
+  clearTimeout(temporizadorManual);
+  pararCamera();
 
-    for (let i = 0; i < linhas.length; i++) {
+  codigoManual.value = "";
 
-        if (
-            linhas[i].includes("LOCALIZADOR")
-        ) {
-
-            const trecho = linhas
-                .slice(i, i + 3)
-                .join(" ");
-
-            const resultado = trecho.match(
-                /LOCALIZADOR[\s:.-]*([0-9][0-9\s.-]{6,18}[0-9])/
-            );
-
-            if (resultado) {
-
-                const numeros =
-                    resultado[1].replace(/\D/g, "");
-
-                if (numeros.length === 8) {
-                    return numeros;
-                }
-            }
-        }
-    }
-
-    return "";
+  leitor.style.display = "none";
+  inicio.style.display = "block";
 }
 
-async function capturarLocalizador() {
-
-    if (processando) {
-        return;
-    }
-
-    if (!cameraStream ||
-        video.videoWidth === 0) {
-
-        mensagem(
-            "A câmera ainda não está pronta."
-        );
-
-        return;
-    }
-
-    processando = true;
-
-    mensagem(
-        "Lendo a notinha. Aguarde..."
-    );
-
-    try {
-
-        if (typeof Tesseract === "undefined") {
-            throw new Error("OCR não carregado");
-        }
-
-        const canvas =
-            document.createElement("canvas");
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        const contexto =
-            canvas.getContext("2d");
-
-        contexto.drawImage(
-            video,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-        const resultado =
-            await Tesseract.recognize(
-                canvas,
-                "por"
-            );
-
-        const codigo =
-            extrairLocalizador(
-                resultado.data.text
-            );
-
-        if (codigo) {
-
-            mostrarResultado(codigo);
-
-            mensagem(
-                "Localizador encontrado! " +
-                "Confira os números."
-            );
-
-        } else {
-
-            mensagem(
-                "Não encontrei o localizador. " +
-                "Aproxime a câmera e tente novamente."
-            );
-
-        }
-
-    } catch (erro) {
-
-        mensagem(
-            "Erro na leitura. Verifique a internet " +
-            "ou utilize a digitação manual."
-        );
-
-    } finally {
-
-        processando = false;
-
-    }
-}
-
-function mostrarResultado(codigo) {
-
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
     pararCamera();
-
-    cameraArea.style.display = "none";
-
-    resultadoArea.style.display = "block";
-
-    codigoInput.value = codigo;
-}
-
-function digitarManual() {
-
-    mostrarResultado("");
-
-    mensagem(
-        "Digite os 8 números do localizador."
-    );
-
-    codigoInput.focus();
-}
-
-function abrirConfirmacao() {
-
-    const codigo =
-        codigoInput.value.replace(/\D/g, "");
-
-    if (codigo.length !== 8) {
-
-        mensagem(
-            "Digite exatamente 8 números."
-        );
-
-        return;
-    }
-
-    mensagem(
-        "Localizador " + codigo +
-        " identificado para " +
-        (plataforma === "ifood"
-            ? "iFood"
-            : "99Food") +
-        ". A integração com a confirmação " +
-        "será feita na próxima atualização."
-    );
-}
-
-function voltarInicio() {
-
-    pararCamera();
-
-    plataforma = "";
-
-    codigoInput.value = "";
-
-    inicio.style.display = "block";
-
-    cameraArea.style.display = "none";
-
-    resultadoArea.style.display = "none";
-
-    mensagem("");
-}
-
-codigoInput.addEventListener(
-    "input",
-    function() {
-
-        this.value =
-            this.value.replace(/\D/g, "")
-            .slice(0, 8);
-
-    }
-);
-
+  }
+});
 </script>
 
 </body>
