@@ -3,7 +3,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1">
 <title>DAROÇA Entregas</title>
 
 <style>
@@ -14,338 +15,372 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #f3e7d3;
-    color: #5b402d;
-    min-height: 100vh;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: #f4eadc;
+    color: #493322;
 }
 
-.box {
-    background: #fffdf9;
-    padding: 25px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 430px;
+header {
+    background: #5a3824;
+    color: white;
     text-align: center;
-    box-shadow: 0 5px 20px rgba(0,0,0,.12);
+    padding: 24px 15px;
 }
 
-h1 {
+header h1 {
     margin: 0;
-    color: #6b4f35;
-    font-size: 30px;
+    font-size: 32px;
 }
 
-.subtitulo {
-    color: #8a735f;
-    margin: 10px 0 25px;
+header p {
+    margin: 8px 0 0;
+    color: #ead7c2;
+}
+
+main {
+    max-width: 480px;
+    margin: auto;
+    padding: 22px;
+}
+
+.card {
+    background: #fffaf3;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 4px 14px #00000015;
+    text-align: center;
+}
+
+h2 {
+    margin-top: 0;
 }
 
 button {
     width: 100%;
-    padding: 17px;
-    margin: 7px 0;
     border: none;
     border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
     font-size: 17px;
     font-weight: bold;
-    color: white;
     cursor: pointer;
 }
 
 .ifood {
-    background: #ea1d2c;
+    background: #e92d39;
+    color: white;
 }
 
 .food99 {
-    background: #e89b16;
+    background: #f6cb27;
+    color: #272727;
 }
 
-.verde {
-    background: #287a46;
+.principal {
+    background: #587342;
+    color: white;
 }
 
-.marrom {
-    background: #6b4f35;
+.secundario {
+    background: #e9d8c5;
+    color: #493322;
 }
 
-.cinza {
-    background: #777;
+video {
+    display: block;
+    width: 100%;
+    background: #222;
+    border-radius: 12px;
+    margin: 16px 0;
 }
 
 input {
     width: 100%;
-    padding: 16px;
-    border: 2px solid #d8c6b3;
-    border-radius: 12px;
+    font-size: 26px;
+    padding: 13px;
     text-align: center;
-    font-size: 27px;
     letter-spacing: 3px;
-    margin: 12px 0;
-}
-
-video {
-    width: 100%;
+    border: 2px solid #c8aa8a;
     border-radius: 12px;
-    background: #222;
-    margin: 12px 0;
 }
 
-#cameraArea, #resultadoArea {
+#mensagem {
+    margin-top: 16px;
+    font-weight: bold;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.oculto {
     display: none;
 }
-
-#aviso {
-    font-size: 14px;
-    margin-top: 15px;
-    line-height: 1.5;
-}
-
-.plataforma {
-    font-weight: bold;
-    margin: 15px 0;
-}
-
 </style>
 </head>
 
 <body>
 
-<div class="box">
-
+<header>
     <h1>DAROÇA</h1>
-    <p class="subtitulo">Confirmação de Entregas</p>
+    <p>Entregas • Leitor de localizador</p>
+</header>
 
-    <div id="inicio">
-        <button class="ifood" onclick="iniciar('ifood')">
-            📷 LER iFood
+<main>
+    <section id="inicio" class="card">
+        <h2>Escolha a plataforma</h2>
+        <p>Vamos identificar o localizador pela câmera.</p>
+
+        <button class="ifood"
+                onclick="iniciar('ifood')">
+            LER iFood
         </button>
 
-        <button class="food99" onclick="iniciar('99')">
-            📷 LER 99Food
+        <button class="food99"
+                onclick="iniciar('99')">
+            LER 99Food
         </button>
-    </div>
+    </section>
 
-    <div id="cameraArea">
-        <div class="plataforma" id="plataformaTexto"></div>
+    <section id="leitor" class="card oculto">
+        <h2 id="tituloLeitor">Ler localizador</h2>
 
-        <video id="video" autoplay playsinline muted></video>
+        <video id="camera"
+               autoplay
+               playsinline
+               muted></video>
 
-        <button class="verde" onclick="capturar()">
+        <button id="botaoIdentificar"
+                class="principal"
+                onclick="identificar()">
             IDENTIFICAR LOCALIZADOR
         </button>
 
-        <button class="cinza" onclick="mostrarManual()">
-            DIGITAR MANUALMENTE
+        <p id="mensagem" role="status"></p>
+
+        <h3>Código identificado</h3>
+
+        <input id="codigo"
+               type="text"
+               inputmode="numeric"
+               maxlength="8"
+               placeholder="8 números"
+               autocomplete="off">
+
+        <button class="principal"
+                onclick="confirmarCodigo()">
+            CONFIRMAR CÓDIGO
         </button>
 
-        <button class="marrom" onclick="voltarInicio()">
+        <button class="secundario"
+                onclick="voltarInicio()">
             VOLTAR
         </button>
-    </div>
+    </section>
+</main>
 
-    <div id="resultadoArea">
-        <h3>Localizador do pedido</h3>
-
-        <input
-            id="codigo"
-            type="text"
-            inputmode="numeric"
-            maxlength="8"
-            placeholder="00000000"
-        >
-
-        <button class="verde" onclick="confirmar()">
-            ABRIR CONFIRMAÇÃO
-        </button>
-
-        <button class="marrom" onclick="voltarInicio()">
-            NOVA LEITURA
-        </button>
-    </div>
-
-    <div id="aviso"></div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<canvas id="foto" class="oculto"></canvas>
 
 <script>
 let plataforma = "";
-let stream = null;
+let transmissao = null;
 let processando = false;
 
-const inicio = document.getElementById("inicio");
-const cameraArea = document.getElementById("cameraArea");
-const resultadoArea = document.getElementById("resultadoArea");
-const video = document.getElementById("video");
-const codigoInput = document.getElementById("codigo");
-const aviso = document.getElementById("aviso");
+const camera = document.getElementById("camera");
+const mensagem = document.getElementById("mensagem");
+const codigo = document.getElementById("codigo");
+const botao = document.getElementById("botaoIdentificar");
 
-function mensagem(texto) {
-    aviso.textContent = texto;
+function mostrarMensagem(texto) {
+    mensagem.textContent = texto;
 }
 
 async function iniciar(tipo) {
     plataforma = tipo;
+    codigo.value = "";
+    mostrarMensagem("");
 
-    inicio.style.display = "none";
-    resultadoArea.style.display = "none";
-    cameraArea.style.display = "block";
+    document.getElementById("inicio")
+        .classList.add("oculto");
 
-    document.getElementById("plataformaTexto").textContent =
-        tipo === "ifood" ? "Leitura iFood" : "Leitura 99Food";
+    document.getElementById("leitor")
+        .classList.remove("oculto");
 
-    mensagem("Abrindo câmera...");
+    document.getElementById("tituloLeitor")
+        .textContent =
+        tipo === "ifood"
+        ? "Localizador iFood"
+        : "Localizador 99Food";
 
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: {
-                facingMode: { ideal: "environment" }
-            }
-        });
-
-        video.srcObject = stream;
-        await video.play();
-
-        mensagem("Aponte a câmera para o localizador da notinha.");
-    } catch (erro) {
-        mensagem("Não foi possível abrir a câmera. Verifique as permissões ou utilize a digitação manual.");
-    }
-}
-
-function pararCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-    }
-
-    video.srcObject = null;
-}
-
-function extrairLocalizador(texto) {
-    const normalizado = texto
-        .toUpperCase()
-        .replace(/\r/g, "")
-        .replace(/[ \t]+/g, " ");
-
-    const linhas = normalizado.split("\n");
-
-    for (let i = 0; i < linhas.length; i++) {
-        if (linhas[i].includes("LOCALIZADOR")) {
-            const trecho = linhas.slice(i, i + 3).join(" ");
-
-            const resultado = trecho.match(
-                /LOCALIZADOR[\s:.-]*([0-9][0-9\s.-]{6,18}[0-9])/
-            );
-
-            if (resultado) {
-                const numeros = resultado[1].replace(/\D/g, "");
-
-                if (numeros.length === 8) {
-                    return numeros;
+        transmissao =
+            await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    facingMode: {
+                        ideal: "environment"
+                    }
                 }
-            }
-        }
-    }
+            });
 
-    return "";
+        camera.srcObject = transmissao;
+        await camera.play();
+
+        mostrarMensagem(
+            "Câmera pronta! Aponte para o localizador."
+        );
+
+    } catch (erro) {
+        mostrarMensagem(
+            "Não foi possível abrir a câmera: " +
+            erro.message
+        );
+    }
 }
 
-async function capturar() {
-    if (processando) return;
+function identificar() {
+    if (processando) {
+        return;
+    }
 
-    if (!stream || video.videoWidth === 0) {
-        mensagem("A câmera ainda não está pronta.");
+    if (!camera.videoWidth ||
+        !camera.videoHeight) {
+        mostrarMensagem(
+            "A câmera ainda não está pronta."
+        );
+        return;
+    }
+
+    if (!window.DaRocaAndroid ||
+        typeof window.DaRocaAndroid.reconhecerImagem
+            !== "function") {
+        mostrarMensagem(
+            "Reconhecimento Android indisponível. " +
+            "Verifique se instalou o APK atualizado."
+        );
         return;
     }
 
     processando = true;
-    mensagem("Identificando localizador. Aguarde...");
+    botao.disabled = true;
+    botao.textContent = "LENDO LOCALIZADOR...";
+
+    mostrarMensagem(
+        "Analisando a imagem. Aguarde..."
+    );
 
     try {
-        if (typeof Tesseract === "undefined") {
-            throw new Error("OCR indisponível");
-        }
+        const canvas =
+            document.getElementById("foto");
 
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = camera.videoWidth;
+        canvas.height = camera.videoHeight;
 
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0);
+        const contexto = canvas.getContext("2d");
 
-        const resultado = await Tesseract.recognize(
-            canvas,
-            "por"
+        contexto.drawImage(
+            camera,
+            0,
+            0,
+            canvas.width,
+            canvas.height
         );
 
-        const codigo = extrairLocalizador(resultado.data.text);
+        const imagem =
+            canvas.toDataURL("image/jpeg", 0.9);
 
-        if (codigo) {
-            mostrarResultado(codigo);
-            mensagem("Localizador identificado! Confira os números.");
-        } else {
-            mensagem("Não encontrei o localizador. Tente aproximar a câmera ou digite manualmente.");
-        }
+        window.DaRocaAndroid.reconhecerImagem(imagem);
+
     } catch (erro) {
-        mensagem("Erro ao reconhecer o texto. Tente novamente ou digite manualmente.");
-    } finally {
-        processando = false;
+        finalizarLeitura();
+
+        mostrarMensagem(
+            "Erro ao capturar a imagem: " +
+            erro.message
+        );
     }
 }
 
-function mostrarResultado(codigo) {
-    pararCamera();
-
-    cameraArea.style.display = "none";
-    resultadoArea.style.display = "block";
-
-    codigoInput.value = codigo;
+function finalizarLeitura() {
+    processando = false;
+    botao.disabled = false;
+    botao.textContent = "IDENTIFICAR LOCALIZADOR";
 }
 
-function mostrarManual() {
-    mostrarResultado("");
-    mensagem("Digite os 8 números do localizador.");
-    codigoInput.focus();
-}
+window.receberResultadoOCR = function(
+    numero,
+    erro
+) {
+    finalizarLeitura();
 
-function confirmar() {
-    const codigo = codigoInput.value.replace(/\D/g, "");
-
-    if (codigo.length !== 8) {
-        mensagem("O localizador precisa ter exatamente 8 números.");
+    if (erro) {
+        mostrarMensagem(erro);
         return;
     }
 
-    mensagem(
-        "Código " + codigo +
+    const somenteNumeros =
+        String(numero || "").replace(/\D/g, "");
+
+    if (somenteNumeros.length === 8) {
+        codigo.value = somenteNumeros;
+
+        mostrarMensagem(
+            "Localizador identificado: " +
+            somenteNumeros
+        );
+
+    } else {
+        mostrarMensagem(
+            "Não encontrei os 8 números. " +
+            "Tente novamente ou digite manualmente."
+        );
+    }
+};
+
+function confirmarCodigo() {
+    const numero =
+        codigo.value.replace(/\D/g, "");
+
+    if (numero.length !== 8) {
+        mostrarMensagem(
+            "Digite ou identifique os 8 números."
+        );
+        return;
+    }
+
+    mostrarMensagem(
+        "Código " + numero +
         " identificado para " +
-        (plataforma === "ifood" ? "iFood" : "99Food") +
-        ". A abertura automática será integrada na próxima etapa."
+        (plataforma === "ifood"
+            ? "iFood"
+            : "99Food") +
+        ". Próxima etapa: abrir a confirmação."
     );
+}
+
+function pararCamera() {
+    if (transmissao) {
+        transmissao.getTracks().forEach(
+            faixa => faixa.stop()
+        );
+
+        transmissao = null;
+    }
+
+    camera.srcObject = null;
 }
 
 function voltarInicio() {
     pararCamera();
+    finalizarLeitura();
 
-    inicio.style.display = "block";
-    cameraArea.style.display = "none";
-    resultadoArea.style.display = "none";
-
-    codigoInput.value = "";
     plataforma = "";
+    codigo.value = "";
+    mostrarMensagem("");
 
-    mensagem("");
+    document.getElementById("leitor")
+        .classList.add("oculto");
+
+    document.getElementById("inicio")
+        .classList.remove("oculto");
 }
-
-codigoInput.addEventListener("input", function() {
-    this.value = this.value.replace(/\D/g, "").slice(0, 8);
-});
 </script>
 
 </body>
