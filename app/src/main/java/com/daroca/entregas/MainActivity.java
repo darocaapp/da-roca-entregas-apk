@@ -8,20 +8,26 @@ import android.os.Build;
 import android.os.Bundle;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebSettings;
 import android.widget.Toast;
+
+import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
     private PermissionRequest cameraRequest;
 
-    private static final String HOME_URL =
-        "file:///android_asset/index.html";
-
     private static final int CAMERA_PERMISSION = 100;
+
+    private static final String HOME_URL =
+        "https://appassets.androidplatform.net/assets/index.html";
+
+    private WebViewAssetLoader assetLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,14 +37,33 @@ public class MainActivity extends Activity {
 
         webView = findViewById(R.id.webView);
 
+        assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler(
+                "/assets/",
+                new WebViewAssetLoader.AssetsPathHandler(this)
+            )
+            .build();
+
         WebSettings settings = webView.getSettings();
 
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(true);
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(false);
         settings.setMediaPlaybackRequiresUserGesture(false);
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(
+                    WebView view,
+                    WebResourceRequest request) {
+
+                return assetLoader.shouldInterceptRequest(
+                    request.getUrl()
+                );
+            }
+        });
 
         webView.setWebChromeClient(new WebChromeClient() {
 
@@ -48,18 +73,37 @@ public class MainActivity extends Activity {
 
                 runOnUiThread(() -> {
 
-                    boolean cameraRequested = false;
+                    boolean solicitaCamera = false;
 
                     for (String resource : request.getResources()) {
+
                         if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
                                 .equals(resource)) {
-                            cameraRequested = true;
+
+                            solicitaCamera = true;
                         }
                     }
 
-                    if (!cameraRequested) {
-                        request.deny();
-                        return;
+                    // Autoriza somente a câmera da nossa tela.
+                    if (!solicitaCamera ||
+                        !HOME_URL.equals(
+                            request.getOrigin().toString()
+                                .replaceAll("/$", "") + "/index.html"
+                        )) {
+
+                        // A origem normalmente termina em /,
+                        // por isso validamos também pelo host.
+                        if (!solicitaCamera ||
+                            !"appassets.androidplatform.net".equals(
+                                request.getOrigin().getHost()
+                            ) ||
+                            !"https".equals(
+                                request.getOrigin().getScheme()
+                            )) {
+
+                            request.deny();
+                            return;
+                        }
                     }
 
                     cameraRequest = request;
@@ -80,6 +124,15 @@ public class MainActivity extends Activity {
                         liberarCamera();
                     }
                 });
+            }
+
+            @Override
+            public void onPermissionRequestCanceled(
+                    PermissionRequest request) {
+
+                if (cameraRequest == request) {
+                    cameraRequest = null;
+                }
             }
         });
 
@@ -116,7 +169,7 @@ public class MainActivity extends Activity {
 
             if (grantResults.length > 0 &&
                 grantResults[0] ==
-                PackageManager.PERMISSION_GRANTED) {
+                    PackageManager.PERMISSION_GRANTED) {
 
                 liberarCamera();
 
@@ -139,7 +192,9 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
 
-        if (!webView.getUrl().equals(HOME_URL)) {
+        String url = webView.getUrl();
+
+        if (url != null && !url.equals(HOME_URL)) {
 
             webView.loadUrl(HOME_URL);
 
@@ -155,9 +210,16 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+
+        if (cameraRequest != null) {
+            cameraRequest.deny();
+            cameraRequest = null;
+        }
+
         if (webView != null) {
             webView.destroy();
         }
+
         super.onDestroy();
     }
 }
